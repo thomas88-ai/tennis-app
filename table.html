@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>League Table</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --bg-color: #1a1a1a;
+            --card-bg: #2d2d2d;
+            --text-color: #e0e0e0;
+            --accent: #4caf50;
+            --danger: #e57373;
+            --nav-bg: #000000;
+            --header-height: 60px;
+            --footer-height: 70px;
+            --gold: #FFD700;
+            --silver: #C0C0C0;
+            --bronze: #CD7F32;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            padding-top: var(--header-height);
+            padding-bottom: var(--footer-height);
+        }
+
+        /* --- GLOBAL HEADER --- */
+        .top-nav {
+            position: fixed; top: 0; left: 0; width: 100%; height: var(--header-height);
+            background-color: var(--nav-bg); display: flex; justify-content: space-between;
+            align-items: center; padding: 0 20px; box-sizing: border-box; z-index: 100;
+            border-bottom: 1px solid #333;
+        }
+        .logo { font-size: 1.5rem; font-weight: bold; color: var(--accent); text-decoration: none; letter-spacing: 1px; }
+        .auth-buttons a { text-decoration: none; color: #fff; font-size: 0.9rem; margin-left: 15px; padding: 5px 10px; border-radius: 4px; }
+        .btn-login { border: 1px solid #555; }
+        .btn-register { background-color: var(--accent); color: white !important; }
+
+        /* --- MAIN CONTENT --- */
+        main { width: 100%; min-height: calc(100vh - var(--header-height) - var(--footer-height)); }
+
+        /* 1. SEASON SELECTOR */
+        .season-container {
+            padding: 15px 20px;
+            background-color: var(--bg-color);
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .season-label { font-weight: bold; color: #888; font-size: 0.9rem; }
+        .season-select {
+            background-color: var(--card-bg); color: #fff; border: 1px solid #444;
+            padding: 8px 12px; border-radius: 5px; font-size: 0.9rem; outline: none;
+            cursor: pointer; width: 150px;
+        }
+
+        /* 2. TABS */
+        .tabs-container {
+            background-color: #000; display: flex; overflow-x: auto; white-space: nowrap;
+            border-bottom: 1px solid #333; position: sticky; top: var(--header-height); z-index: 90;
+        }
+        .tabs-container::-webkit-scrollbar { display: none; }
+        .tab-btn {
+            background: transparent; color: #888; border: none; border-bottom: 3px solid transparent;
+            padding: 15px 20px; min-width: 60px; text-align: center; cursor: pointer;
+            font-weight: bold; font-size: 1rem; flex-grow: 1; transition: 0.3s;
+        }
+        .tab-btn.active { color: var(--accent); border-bottom: 3px solid var(--accent); }
+
+        /* 3. TABLE LAYOUT */
+        .table-container { padding-bottom: 20px; }
+
+        .table-header {
+            display: flex; padding: 10px 15px; background-color: #222;
+            color: #666; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px;
+            position: sticky; top: calc(var(--header-height) + 53px); z-index: 80;
+        }
+
+        .table-row {
+            display: flex; align-items: center; padding: 15px;
+            background-color: var(--card-bg); border-bottom: 1px solid #333;
+        }
+        .table-row:nth-child(even) { background-color: #2a2a2a; }
+
+        /* COLUMNS */
+        .col-rank { width: 40px; text-align: center; font-weight: bold; font-size: 1.1rem; }
+        
+        .col-name { 
+            flex: 1; 
+            padding-left: 10px; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center; 
+        }
+        
+        /* EDITED: Score Column */
+        .col-score { 
+            width: 80px;          /* Width for numbers */
+            text-align: right;    /* Numbers align right */
+            font-weight: normal;  /* REMOVED BOLD */
+            font-size: 1.1rem; 
+            color: #fff; 
+            padding-right: 15px;  /* Added padding to move away from right edge */
+        }
+
+        /* Name Styling */
+        .name-row { display: flex; align-items: center; }
+        .player-name { font-size: 1rem; color: #fff; font-weight: 500; }
+        .player-group { font-size: 0.75rem; color: #888; margin-top: 3px; }
+
+        /* Status Pills */
+        .status-pill {
+            font-size: 0.55rem; padding: 2px 6px; border-radius: 4px; 
+            text-transform: uppercase; font-weight: bold; margin-left: 8px;
+            letter-spacing: 0.5px; vertical-align: middle;
+        }
+        .status-paid { background-color: rgba(76, 175, 80, 0.2); color: var(--accent); border: 1px solid var(--accent); }
+        .status-unpaid { background-color: rgba(229, 115, 115, 0.2); color: var(--danger); border: 1px solid var(--danger); }
+
+        /* Ranks */
+        .rank-badge {
+            width: 28px; height: 28px; line-height: 28px; border-radius: 50%;
+            display: inline-block; color: #fff; background: #444; font-size: 0.9rem;
+        }
+        .rank-1 .rank-badge { background-color: var(--gold); color: #000; box-shadow: 0 0 5px var(--gold); }
+        .rank-2 .rank-badge { background-color: var(--silver); color: #000; }
+        .rank-3 .rank-badge { background-color: var(--bronze); color: #fff; }
+
+        .empty-state { text-align: center; padding: 40px; color: #666; }
+
+        /* --- FOOTER --- */
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 0; width: 100%; height: var(--footer-height);
+            background-color: var(--nav-bg); border-top: 1px solid #333;
+            display: flex; justify-content: space-around; align-items: center; z-index: 100;
+        }
+        .nav-item { display: flex; flex-direction: column; align-items: center; text-decoration: none; color: #888; font-size: 0.75rem; width: 20%; }
+        .nav-item i { font-size: 1.4rem; margin-bottom: 5px; }
+        .nav-item.active { color: var(--accent); }
+        .nav-item.middle-icon i {
+            font-size: 1.8rem; background: #222; padding: 10px; border-radius: 50%;
+            margin-top: -20px; border: 2px solid var(--nav-bg); color: #888;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.5);
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="top-nav">
+        <a href="#" class="logo">LOGO</a>
+        <div class="auth-buttons">
+            <a href="login.html" class="btn-login">Login</a>
+            <a href="register.html" class="btn-register">Register</a>
+        </div>
+    </nav>
+
+    <main>
+        <div class="season-container">
+            <span class="season-label">Select Season:</span>
+            <select class="season-select" id="seasonSelect" onchange="changeSeason()">
+                <option value="5" selected>Season 5 (Current)</option>
+                <option value="4">Season 4</option>
+                <option value="3">Season 3</option>
+                <option value="2">Season 2</option>
+                <option value="1">Season 1</option>
+            </select>
+        </div>
+
+        <div class="tabs-container">
+            <button class="tab-btn active" onclick="switchTab('ALL')">ALL</button>
+            <button class="tab-btn" onclick="switchTab('D1')">D1</button>
+            <button class="tab-btn" onclick="switchTab('D2')">D2</button>
+            <button class="tab-btn" onclick="switchTab('D3')">D3</button>
+            <button class="tab-btn" onclick="switchTab('D4')">D4</button>
+            <button class="tab-btn" onclick="switchTab('D5')">D5</button>
+        </div>
+
+        <div class="table-header">
+            <div class="col-rank">#</div>
+            <div class="col-name">Player / Group</div>
+            <div class="col-score">Pts</div>
+        </div>
+
+        <div class="table-container" id="tableContent">
+            </div>
+    </main>
+
+    <nav class="bottom-nav">
+        <a href="table.html" class="nav-item active"><i class="fa-solid fa-list-ol"></i><span>Table</span></a>
+        <a href="match.html" class="nav-item"><i class="fa-solid fa-pen-to-square"></i><span>Post</span></a>
+        <a href="tournament.html" class="nav-item middle-icon"><i class="fa-solid fa-trophy"></i><span>Tournament</span></a>
+        <a href="player.html" class="nav-item"><i class="fa-solid fa-user"></i><span>Player</span></a>
+        <a href="community.html" class="nav-item"><i class="fa-regular fa-comments"></i><span>Community</span></a>
+    </nav>
+
+    <script src="app-api.js"></script>
+    <script>
+        let currentTab = "ALL";
+        let currentSeason = "2026-S1";
+        let standingsRows = [];
+
+        function changeSeason() {
+            const selected = document.getElementById("seasonSelect").value;
+            currentSeason = selected === "5" ? "2026-S1" : `2026-S${selected}`;
+            loadStandings();
+        }
+
+        function switchTab(group) {
+            currentTab = group;
+            document.querySelectorAll(".tab-btn").forEach((btn) => {
+                btn.classList.toggle("active", btn.innerText === group);
+            });
+            loadStandings();
+        }
+
+        async function loadStandings() {
+            const container = document.getElementById("tableContent");
+            container.innerHTML = `<div class="empty-state">Loading table...</div>`;
+
+            const params = new URLSearchParams({
+                season: currentSeason,
+                group: currentTab,
+            });
+
+            try {
+                const result = await TennisApi.request(`/api/standings?${params.toString()}`);
+                standingsRows = result.rows || [];
+                renderTable();
+            } catch (error) {
+                container.innerHTML = `<div class="empty-state">${TennisApi.escapeHtml(error.message)}</div>`;
+            }
+        }
+
+        function renderTable() {
+            const container = document.getElementById("tableContent");
+            container.innerHTML = "";
+
+            if (!standingsRows.length) {
+                container.innerHTML = `<div class="empty-state">No records found.</div>`;
+                return;
+            }
+
+            standingsRows.forEach((player, index) => {
+                const rank = index + 1;
+                let rowClass = "table-row";
+                if (rank === 1) rowClass += " rank-1";
+                else if (rank === 2) rowClass += " rank-2";
+                else if (rank === 3) rowClass += " rank-3";
+
+                const statusHtml = player.paid
+                    ? `<span class="status-pill status-paid">Verified</span>`
+                    : `<span class="status-pill status-unpaid">Unverified</span>`;
+
+                const html = `
+                    <div class="${rowClass}">
+                        <div class="col-rank"><span class="rank-badge">${rank}</span></div>
+                        <div class="col-name">
+                            <div class="name-row">
+                                <span class="player-name">${TennisApi.escapeHtml(player.name)}</span>
+                                ${statusHtml}
+                            </div>
+                            <span class="player-group">Group ${TennisApi.escapeHtml(player.group)} | W${player.won}-L${player.lost}</span>
+                        </div>
+                        <div class="col-score">${player.points}</div>
+                    </div>
+                `;
+                container.innerHTML += html;
+            });
+        }
+
+        window.onload = () => {
+            loadStandings();
+        };
+    </script>
+</body>
+</html>

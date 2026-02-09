@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tennis Community</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-color: #1a1a1a;
+            --card-bg: #2d2d2d;
+            --text-color: #e0e0e0;
+            --accent: #4caf50;
+            --nav-bg: #000000;
+            --header-height: 60px;
+            --footer-height: 70px;
+            --toolbar-height: 130px;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            padding-top: calc(var(--header-height) + var(--toolbar-height));
+            padding-bottom: var(--footer-height);
+        }
+
+        .top-nav {
+            position: fixed; top: 0; left: 0; width: 100%; height: var(--header-height);
+            background-color: var(--nav-bg); display: flex; justify-content: space-between;
+            align-items: center; padding: 0 20px; box-sizing: border-box; z-index: 101;
+            border-bottom: 1px solid #333;
+        }
+        .logo { font-size: 1.5rem; font-weight: bold; color: var(--accent); text-decoration: none; }
+        .auth-buttons a { text-decoration: none; color: #fff; font-size: 0.9rem; border: 1px solid #555; padding: 5px 10px; border-radius: 4px; }
+
+        .control-bar {
+            position: fixed; top: var(--header-height); left: 0; width: 100%; height: var(--toolbar-height);
+            background-color: #151515; z-index: 100; border-bottom: 1px solid #333;
+            display: flex; flex-direction: column; justify-content: center; padding: 10px 0;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            gap: 10px;
+        }
+
+        .search-wrapper {
+            padding: 0 15px; position: relative;
+            max-width: 600px; margin-left: auto; margin-right: auto; width: 100%; box-sizing: border-box;
+        }
+        .search-wrapper i { position: absolute; left: 30px; top: 50%; transform: translateY(-50%); color: #888; }
+        .search-input {
+            width: 100%; padding: 10px 10px 10px 40px; background: #252525; border: 1px solid #444;
+            border-radius: 20px; color: white; outline: none; font-size: 0.9rem;
+        }
+
+        .composer {
+            padding: 0 15px;
+            max-width: 600px;
+            width: 100%;
+            margin: 0 auto;
+            box-sizing: border-box;
+            display: flex;
+            gap: 8px;
+        }
+
+        .composer textarea {
+            flex: 1;
+            background: #252525;
+            border: 1px solid #444;
+            color: #fff;
+            border-radius: 10px;
+            padding: 10px;
+            resize: none;
+            min-height: 40px;
+            max-height: 80px;
+            font-family: inherit;
+        }
+
+        .composer button {
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            padding: 0 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .news-feed {
+            padding: 15px; max-width: 600px; margin: 0 auto; display: flex; flex-direction: column; gap: 14px;
+        }
+
+        .news-card {
+            background-color: var(--card-bg); border-radius: 12px; overflow: hidden;
+            border: 1px solid #333;
+            padding: 14px;
+        }
+
+        .card-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .badge {
+            font-size: 0.7rem; font-weight: bold; text-transform: uppercase; padding: 3px 8px; border-radius: 4px;
+            background: rgba(76, 175, 80, 0.2); color: var(--accent); border: 1px solid var(--accent);
+        }
+        .post-date { font-size: 0.75rem; color: #777; }
+        .card-title { margin: 0 0 8px 0; font-size: 1rem; color: #fff; }
+        .card-text { font-size: 0.92rem; color: #ccc; line-height: 1.5; margin: 0; white-space: pre-wrap; }
+        .empty-state { text-align: center; color: #666; margin-top: 40px; }
+
+        .official-link {
+            text-align: center;
+            margin-top: 8px;
+            color: #888;
+            font-size: 0.85rem;
+        }
+        .official-link a { color: var(--accent); text-decoration: none; }
+
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 0; width: 100%; height: var(--footer-height);
+            background-color: var(--nav-bg); border-top: 1px solid #333;
+            display: flex; justify-content: space-around; align-items: center; z-index: 100;
+        }
+        .nav-item { display: flex; flex-direction: column; align-items: center; text-decoration: none; color: #888; font-size: 0.75rem; width: 20%; }
+        .nav-item i { font-size: 1.4rem; margin-bottom: 5px; }
+        .nav-item.active { color: var(--accent); }
+        .nav-item.middle-icon i {
+            font-size: 1.8rem; background: #222; padding: 10px; border-radius: 50%;
+            margin-top: -20px; border: 2px solid var(--nav-bg); color: #888;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.5);
+        }
+    </style>
+</head>
+<body>
+    <nav class="top-nav">
+        <a href="#" class="logo">LOGO</a>
+        <div class="auth-buttons">
+            <a href="profile.html">Profile</a>
+        </div>
+    </nav>
+
+    <div class="control-bar">
+        <div class="search-wrapper">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="searchInput" class="search-input" placeholder="Search community posts..." onkeyup="handleSearch()">
+        </div>
+        <div class="composer">
+            <textarea id="postInput" placeholder="Share something with the tennis community..."></textarea>
+            <button onclick="submitPost()">Post</button>
+        </div>
+    </div>
+
+    <main>
+        <div class="official-link">Official updates: <a href="news.html">Open News</a></div>
+        <div class="news-feed" id="communityFeed"></div>
+    </main>
+
+    <nav class="bottom-nav">
+        <a href="table.html" class="nav-item"><i class="fa-solid fa-list-ol"></i><span>Table</span></a>
+        <a href="match.html" class="nav-item"><i class="fa-solid fa-pen-to-square"></i><span>Match</span></a>
+        <a href="tournament.html" class="nav-item middle-icon"><i class="fa-solid fa-trophy"></i><span>Tournament</span></a>
+        <a href="player.html" class="nav-item"><i class="fa-solid fa-user"></i><span>Player</span></a>
+        <a href="community.html" class="nav-item active"><i class="fa-regular fa-comments"></i><span>Community</span></a>
+    </nav>
+
+    <script src="app-api.js"></script>
+    <script>
+        let searchTerm = "";
+
+        function handleSearch() {
+            searchTerm = document.getElementById("searchInput").value.trim().toLowerCase();
+            loadCommunity();
+        }
+
+        async function submitPost() {
+            const content = document.getElementById("postInput").value.trim();
+            if (content.length < 3) {
+                alert("Please write at least 3 characters.");
+                return;
+            }
+
+            const session = TennisApi.getSession();
+            const author = session.player_name || "Guest Player";
+
+            try {
+                await TennisApi.request("/api/community", {
+                    method: "POST",
+                    body: JSON.stringify({
+                        author,
+                        player_id: session.player_id || "",
+                        content,
+                    }),
+                });
+                document.getElementById("postInput").value = "";
+                await loadCommunity();
+            } catch (error) {
+                alert(error.message);
+            }
+        }
+
+        async function loadCommunity() {
+            const container = document.getElementById("communityFeed");
+            container.innerHTML = `<div class="empty-state">Loading community posts...</div>`;
+
+            const params = new URLSearchParams();
+            if (searchTerm) params.set("search", searchTerm);
+
+            try {
+                const response = await TennisApi.request(`/api/community?${params.toString()}`);
+                renderCommunity(response.posts || []);
+            } catch (error) {
+                container.innerHTML = `<div class="empty-state">${TennisApi.escapeHtml(error.message)}</div>`;
+            }
+        }
+
+        function renderCommunity(posts) {
+            const container = document.getElementById("communityFeed");
+            container.innerHTML = "";
+
+            if (!posts.length) {
+                container.innerHTML = `<div class="empty-state">No community posts yet.</div>`;
+                return;
+            }
+
+            posts.forEach((item) => {
+                const date = (item.created_at || "").replace("T", " ").replace("Z", " UTC");
+                const card = document.createElement("div");
+                card.className = "news-card";
+                card.innerHTML = `
+                    <div class="card-meta">
+                        <span class="badge">Community</span>
+                        <span class="post-date">${TennisApi.escapeHtml(date)}</span>
+                    </div>
+                    <h3 class="card-title">${TennisApi.escapeHtml(item.author || "Player")}</h3>
+                    <p class="card-text">${TennisApi.escapeHtml(item.content || "")}</p>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        window.onload = loadCommunity;
+    </script>
+</body>
+</html>

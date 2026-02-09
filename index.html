@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tennis Tournament App</title>
+  <style>
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at top right, #19441b 0%, #101010 45%, #070707 100%);
+      color: #fff;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+
+    .card {
+      width: 100%;
+      max-width: 720px;
+      border: 1px solid #2e2e2e;
+      border-radius: 16px;
+      padding: 24px;
+      background: rgba(26, 26, 26, 0.92);
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45);
+    }
+
+    h1 {
+      margin-top: 0;
+      font-size: 1.7rem;
+    }
+
+    p {
+      color: #b8b8b8;
+      margin-bottom: 20px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 10px;
+    }
+
+    a {
+      text-decoration: none;
+      border: 1px solid #3a3a3a;
+      color: #f0f0f0;
+      padding: 12px;
+      border-radius: 10px;
+      text-align: center;
+      transition: 0.2s;
+    }
+
+    a:hover {
+      border-color: #4caf50;
+      color: #4caf50;
+      transform: translateY(-1px);
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Tennis Tournament App</h1>
+    <p>Regular season, tournament bracket, scoring table, players, community, profile/account, and admin backend.</p>
+    <div class="grid">
+      <a href="register.html">Register</a>
+      <a href="login.html">Login</a>
+      <a href="profile.html">Profile</a>
+      <a href="account.html">Account</a>
+      <a href="table.html">Scoring Table</a>
+      <a href="match.html">Regular Season</a>
+      <a href="tournament.html">Tournament</a>
+      <a href="player.html">Players</a>
+      <a href="community.html">Community</a>
+      <a href="news.html">Official News</a>
+      <a href="admin.html">Admin Panel</a>
+    </div>
+  </div>
+</body>
+</html>

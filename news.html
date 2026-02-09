@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CourtSide News</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --bg-color: #1a1a1a;
+            --card-bg: #2d2d2d;
+            --text-color: #e0e0e0;
+            --accent: #4caf50;
+            
+            /* Category Colors */
+            --col-official: #e57373; /* Red/Pink */
+            --col-high: #ffb74d;     /* Orange */
+            --col-spot: #4fc3f7;     /* Light Blue */
+            --col-soc: #ba68c8;      /* Purple */
+
+            --nav-bg: #000000;
+            --header-height: 60px;
+            --footer-height: 70px;
+            --toolbar-height: 110px;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            padding-top: calc(var(--header-height) + var(--toolbar-height));
+            padding-bottom: var(--footer-height);
+        }
+
+        /* --- HEADER --- */
+        .top-nav {
+            position: fixed; top: 0; left: 0; width: 100%; height: var(--header-height);
+            background-color: var(--nav-bg); display: flex; justify-content: space-between;
+            align-items: center; padding: 0 20px; box-sizing: border-box; z-index: 101;
+            border-bottom: 1px solid #333;
+        }
+        .logo { font-size: 1.5rem; font-weight: bold; color: var(--accent); text-decoration: none; }
+        .auth-buttons a { text-decoration: none; color: #fff; font-size: 0.9rem; border: 1px solid #555; padding: 5px 10px; border-radius: 4px; }
+
+        /* --- TOOLBAR --- */
+        .control-bar {
+            position: fixed; top: var(--header-height); left: 0; width: 100%; height: var(--toolbar-height);
+            background-color: #151515; z-index: 100; border-bottom: 1px solid #333;
+            display: flex; flex-direction: column; justify-content: center; padding: 10px 0;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        }
+
+        .search-wrapper {
+            padding: 0 15px; position: relative; margin-bottom: 10px;
+            max-width: 600px; margin-left: auto; margin-right: auto; width: 100%; box-sizing: border-box;
+        }
+        .search-wrapper i { position: absolute; left: 30px; top: 50%; transform: translateY(-50%); color: #888; }
+        .search-input {
+            width: 100%; padding: 10px 10px 10px 40px; background: #252525; border: 1px solid #444;
+            border-radius: 20px; color: white; outline: none; font-size: 0.9rem;
+        }
+        .search-input:focus { border-color: var(--accent); }
+
+        .tabs-wrapper {
+            display: flex; gap: 10px; padding: 0 15px; overflow-x: auto; white-space: nowrap;
+            -ms-overflow-style: none; scrollbar-width: none;
+        }
+        .tabs-wrapper::-webkit-scrollbar { display: none; }
+
+        .filter-chip {
+            background: #333; color: #aaa; border: 1px solid #444; padding: 6px 16px;
+            border-radius: 20px; font-size: 0.85rem; cursor: pointer; transition: 0.2s;
+        }
+        .filter-chip.active { background: var(--accent); color: white; border-color: var(--accent); font-weight: bold; }
+
+        /* --- FEED --- */
+        .news-feed {
+            padding: 15px; max-width: 600px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px;
+        }
+
+        .news-card {
+            background-color: var(--card-bg); border-radius: 12px; overflow: hidden;
+            border: 1px solid #333; animation: fadeIn 0.4s ease;
+        }
+        @keyframes fadeIn { from{opacity:0; transform:translateY(10px);} to{opacity:1; transform:translateY(0);} }
+
+        .card-image {
+            width: 100%; height: 180px; background-color: #333;
+            background-size: cover; background-position: center;
+        }
+        
+        .card-body { padding: 15px; }
+
+        .card-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        
+        /* Dynamic Badges */
+        .badge { font-size: 0.7rem; font-weight: bold; text-transform: uppercase; padding: 3px 8px; border-radius: 4px; }
+        .badge-official { background: rgba(229, 115, 115, 0.15); color: var(--col-official); border: 1px solid var(--col-official); }
+        .badge-highlights { background: rgba(255, 183, 77, 0.15); color: var(--col-high); border: 1px solid var(--col-high); }
+        .badge-spotlight { background: rgba(79, 195, 247, 0.15); color: var(--col-spot); border: 1px solid var(--col-spot); }
+        .badge-social { background: rgba(186, 104, 200, 0.15); color: var(--col-soc); border: 1px solid var(--col-soc); }
+
+        .post-date { font-size: 0.75rem; color: #777; }
+
+        .card-title { margin: 0 0 8px 0; font-size: 1.1rem; color: #fff; }
+        .card-text { font-size: 0.9rem; color: #ccc; line-height: 1.5; margin: 0; }
+        .hashtag { color: var(--col-spot); cursor: pointer; font-weight: 500; }
+        .hashtag:hover { text-decoration: underline; }
+
+        .empty-state { text-align: center; color: #666; margin-top: 40px; }
+
+        /* --- FOOTER --- */
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 0; width: 100%; height: var(--footer-height);
+            background-color: var(--nav-bg); border-top: 1px solid #333;
+            display: flex; justify-content: space-around; align-items: center; z-index: 100;
+        }
+        .nav-item { display: flex; flex-direction: column; align-items: center; text-decoration: none; color: #888; font-size: 0.75rem; width: 20%; }
+        .nav-item i { font-size: 1.4rem; margin-bottom: 5px; }
+        .nav-item.active { color: var(--accent); }
+        .nav-item.middle-icon i {
+            font-size: 1.8rem; background: #222; padding: 10px; border-radius: 50%;
+            margin-top: -20px; border: 2px solid var(--nav-bg); color: #888;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.5);
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="top-nav">
+        <a href="#" class="logo">LOGO</a>
+        <div class="auth-buttons">
+            <a href="login.html">Login</a>
+        </div>
+    </nav>
+
+    <div class="control-bar">
+        <div class="search-wrapper">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="searchInput" class="search-input" placeholder="Search topics, #hashtags..." onkeyup="handleSearch()">
+        </div>
+        <div class="tabs-wrapper">
+            <button class="filter-chip active" onclick="filterCategory('All', this)">All</button>
+            <button class="filter-chip" onclick="filterCategory('Official', this)">Official</button>
+            <button class="filter-chip" onclick="filterCategory('Highlights', this)">Highlights</button>
+            <button class="filter-chip" onclick="filterCategory('Spotlight', this)">Spotlight</button>
+            <button class="filter-chip" onclick="filterCategory('Social', this)">Social</button>
+        </div>
+    </div>
+
+    <main>
+        <div class="news-feed" id="newsFeed">
+            </div>
+    </main>
+
+    <nav class="bottom-nav">
+        <a href="table.html" class="nav-item"><i class="fa-solid fa-list-ol"></i><span>Table</span></a>
+        <a href="match.html" class="nav-item"><i class="fa-solid fa-pen-to-square"></i><span>Match</span></a>
+        <a href="tournament.html" class="nav-item middle-icon"><i class="fa-solid fa-trophy"></i><span>Tournament</span></a>
+        <a href="player.html" class="nav-item"><i class="fa-solid fa-user"></i><span>Player</span></a>
+        <a href="community.html" class="nav-item active"><i class="fa-regular fa-comments"></i><span>Community</span></a>
+    </nav>
+
+    <script src="app-api.js"></script>
+    <script>
+        let currentCategory = "All";
+        let searchTerm = "";
+
+        function filterCategory(category, btnElement) {
+            currentCategory = category;
+            document.querySelectorAll(".filter-chip").forEach((btn) => btn.classList.remove("active"));
+            btnElement.classList.add("active");
+            loadNews();
+        }
+
+        function handleSearch() {
+            searchTerm = document.getElementById("searchInput").value.toLowerCase();
+            loadNews();
+        }
+
+        async function loadNews() {
+            const container = document.getElementById("newsFeed");
+            container.innerHTML = `<div class="empty-state">Loading posts...</div>`;
+
+            const params = new URLSearchParams();
+            if (currentCategory !== "All") {
+                params.set("category", currentCategory);
+            }
+            if (searchTerm) {
+                params.set("search", searchTerm);
+            }
+
+            try {
+                const response = await TennisApi.request(`/api/news?${params.toString()}`);
+                renderNews(response.news || []);
+            } catch (error) {
+                container.innerHTML = `<div class="empty-state">${TennisApi.escapeHtml(error.message)}</div>`;
+            }
+        }
+
+        function renderNews(items) {
+            const container = document.getElementById("newsFeed");
+            container.innerHTML = "";
+
+            if (!items.length) {
+                container.innerHTML = `<div class="empty-state">No posts found.</div>`;
+                return;
+            }
+
+            items.forEach((item) => {
+                let badgeClass = "badge-social";
+                if (item.category === "Official") badgeClass = "badge-official";
+                if (item.category === "Highlights") badgeClass = "badge-highlights";
+                if (item.category === "Spotlight") badgeClass = "badge-spotlight";
+
+                const formattedContent = TennisApi.escapeHtml(item.content || "").replace(
+                    /#(\w+)/g,
+                    '<span class="hashtag">#$1</span>'
+                );
+
+                const imageHTML = item.image
+                    ? `<div class="card-image" style="background-image: url('${TennisApi.escapeHtml(item.image)}')"></div>`
+                    : "";
+
+                const card = document.createElement("div");
+                card.className = "news-card";
+                card.innerHTML = `
+                    ${imageHTML}
+                    <div class="card-body">
+                        <div class="card-meta">
+                            <span class="badge ${badgeClass}">${TennisApi.escapeHtml(item.category || "Social")}</span>
+                            <span class="post-date">${TennisApi.escapeHtml(item.date || "")}</span>
+                        </div>
+                        <h3 class="card-title">${TennisApi.escapeHtml(item.title || "")}</h3>
+                        <p class="card-text">${formattedContent}</p>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        window.onload = loadNews;
+    </script>
+</body>
+</html>

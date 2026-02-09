@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Match Results</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --bg-color: #1a1a1a;
+            --card-bg: #2d2d2d;
+            --text-color: #e0e0e0;
+            --accent: #4caf50;
+            --nav-bg: #000000;
+            --header-height: 60px;
+            --footer-height: 70px;
+            --toolbar-height: 60px;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            padding-top: calc(var(--header-height) + var(--toolbar-height));
+            padding-bottom: var(--footer-height);
+        }
+
+        /* --- NAV --- */
+        .top-nav {
+            position: fixed; top: 0; left: 0; width: 100%; height: var(--header-height);
+            background-color: var(--nav-bg); display: flex; justify-content: space-between;
+            align-items: center; padding: 0 20px; box-sizing: border-box; z-index: 101;
+            border-bottom: 1px solid #333;
+        }
+        .logo { font-size: 1.5rem; font-weight: bold; color: var(--accent); text-decoration: none; }
+        .auth-buttons a { text-decoration: none; color: #fff; font-size: 0.9rem; border: 1px solid #555; padding: 5px 10px; border-radius: 4px; }
+
+        /* --- TOOLBAR --- */
+        .toolbar {
+            position: fixed; top: var(--header-height); left: 0; width: 100%; height: var(--toolbar-height);
+            background-color: #151515; display: flex; justify-content: space-between; align-items: center;
+            padding: 0 20px; box-sizing: border-box; z-index: 100;
+            border-bottom: 1px solid #333; box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+        .season-select {
+            background-color: #333; color: #fff; border: 1px solid #444;
+            padding: 6px 10px; border-radius: 5px; font-size: 0.85rem; outline: none;
+        }
+        .btn-post-mini {
+            background-color: var(--accent); color: white; border: none; padding: 8px 15px;
+            border-radius: 20px; font-size: 0.85rem; font-weight: bold; display: flex; align-items: center; gap: 6px; cursor: pointer;
+        }
+
+        /* --- MATCH FEED --- */
+        .match-feed {
+            padding: 15px; display: flex; flex-direction: column; gap: 10px;
+            max-width: 800px; margin: 0 auto;
+        }
+
+        .match-card {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            padding: 12px 15px;
+            border: 1px solid #333;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .match-left {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            flex: 1;
+        }
+
+        .match-date {
+            font-size: 0.65rem; color: #666; margin-bottom: 4px;
+        }
+
+        /* Name Stacking */
+        .winner-name {
+            font-size: 1rem;
+            color: #ffffff;      /* Pure White */
+            font-weight: 700;    /* Bold */
+            margin-bottom: 2px;
+        }
+
+        .loser-name {
+            font-size: 0.95rem;
+            color: #888888;      /* Gray */
+            font-weight: 400;    /* Normal */
+        }
+
+        /* Score Styling */
+        .match-score-right {
+            font-size: 1rem;
+            font-weight: bold;
+            color: #fff;
+            background: #222;
+            padding: 6px 10px;
+            border-radius: 5px;
+            border: 1px solid #444;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
+
+        /* --- MODALS --- */
+        .modal-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9); z-index: 1000; align-items: center; justify-content: center;
+        }
+        .modal {
+            background: var(--card-bg); padding: 20px; border-radius: 12px;
+            width: 90%; max-width: 380px; border: 1px solid #444;
+            display: flex; flex-direction: column; gap: 15px;
+        }
+        .modal h3 { margin: 0; color: white; text-align: center; border-bottom: 1px solid #444; padding-bottom: 10px;}
+        
+        .form-label { display: block; color: #aaa; font-size: 0.85rem; margin-bottom: 5px; }
+        .form-control { width: 100%; padding: 10px; background: #1a1a1a; border: 1px solid #444; color: white; border-radius: 5px; box-sizing: border-box; }
+
+        .score-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+        .score-label { width: 50px; font-size: 0.85rem; color: #888; }
+        .score-box { width: 50px; height: 40px; text-align: center; background: #000; border: 1px solid #555; color: white; border-radius: 4px; font-size: 1.1rem; }
+        .score-divider { color: #555; font-weight: bold; }
+
+        .btn-add-set { background: none; border: 1px dashed #555; color: #888; width: 100%; padding: 8px; border-radius: 5px; cursor: pointer; font-size: 0.8rem; }
+        
+        .modal-actions { display: flex; gap: 10px; margin-top: 10px; }
+        .btn-confirm { flex: 1; background: var(--accent); color: white; border: none; padding: 12px; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        .btn-cancel { flex: 1; background: transparent; color: #888; border: 1px solid #444; padding: 12px; border-radius: 6px; cursor: pointer; }
+
+        .confirm-summary { text-align: center; background: #222; padding: 15px; border-radius: 8px; }
+        .vs-line { font-size: 1rem; margin-bottom: 5px; }
+        .score-line { font-size: 1.4rem; color: var(--accent); font-weight: bold; letter-spacing: 1px; }
+
+        /* --- FOOTER --- */
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 0; width: 100%; height: var(--footer-height);
+            background-color: var(--nav-bg); border-top: 1px solid #333;
+            display: flex; justify-content: space-around; align-items: center; z-index: 100;
+        }
+        .nav-item { display: flex; flex-direction: column; align-items: center; text-decoration: none; color: #888; font-size: 0.75rem; width: 20%; }
+        .nav-item i { font-size: 1.4rem; margin-bottom: 5px; }
+        .nav-item.active { color: var(--accent); }
+        .nav-item.middle-icon i {
+            font-size: 1.8rem; background: #222; padding: 10px; border-radius: 50%;
+            margin-top: -20px; border: 2px solid var(--nav-bg); color: #888; box-shadow: 0 -2px 10px rgba(0,0,0,0.5);
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="top-nav">
+        <a href="#" class="logo">LOGO</a>
+        <div class="auth-buttons">
+            <a href="login.html">Login</a>
+        </div>
+    </nav>
+
+    <div class="toolbar">
+        <select class="season-select" id="seasonSelect">
+            <option value="5" selected>Season 5 (Current)</option>
+            <option value="4">Season 4</option>
+            <option value="3">Season 3</option>
+        </select>
+        <button class="btn-post-mini" onclick="openFormModal()">
+            <i class="fa-solid fa-pen"></i> Post Result
+        </button>
+    </div>
+
+    <main>
+        <div class="match-feed" id="matchFeed">
+            </div>
+    </main>
+
+    <div class="modal-overlay" id="formModal">
+        <div class="modal">
+            <h3>Post Match Result</h3>
+            <div>
+                <label class="form-label">Select Opponent</label>
+                <select id="opponentSelect" class="form-control">
+                    </select>
+            </div>
+            <div>
+                <label class="form-label">Match Date</label>
+                <input type="date" id="matchDate" class="form-control">
+            </div>
+            <div>
+                <label class="form-label">Score (You vs Opponent)</label>
+                <div id="scoreContainer">
+                    <div class="score-row">
+                        <span class="score-label">Set 1</span>
+                        <input type="number" class="score-box p1-score" placeholder="6">
+                        <span class="score-divider">:</span>
+                        <input type="number" class="score-box p2-score" placeholder="4">
+                    </div>
+                    <div class="score-row">
+                        <span class="score-label">Set 2</span>
+                        <input type="number" class="score-box p1-score" placeholder="">
+                        <span class="score-divider">:</span>
+                        <input type="number" class="score-box p2-score" placeholder="">
+                    </div>
+                </div>
+                <button type="button" class="btn-add-set" onclick="addSetRow()">+ Add Set 3</button>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="closeAllModals()">Cancel</button>
+                <button class="btn-confirm" onclick="showConfirmation()">Next</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="confirmModal">
+        <div class="modal">
+            <h3>Confirm Result</h3>
+            <div class="confirm-summary">
+                <div class="vs-line">
+                    <span id="confirmWinnerName" style="color:#fff; font-weight:bold;">Aaron Smith</span>
+                    <span style="color:#666; font-size:0.8em;"> vs </span>
+                    <span id="confirmOpponent" style="color:#aaa;">Opponent</span>
+                </div>
+                <div class="score-line" id="confirmScore">
+                    6:4 , 7:6
+                </div>
+                <div style="font-size:0.8rem; color:#888; margin-top:5px;" id="confirmDate">
+                    2026-01-29
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="backToForm()">Back</button>
+                <button class="btn-confirm" onclick="submitFinal()">Submit</button>
+            </div>
+        </div>
+    </div>
+
+    <nav class="bottom-nav">
+        <a href="table.html" class="nav-item"><i class="fa-solid fa-list-ol"></i><span>Table</span></a>
+        <a href="match.html" class="nav-item active"><i class="fa-solid fa-pen-to-square"></i><span>Match</span></a>
+        <a href="tournament.html" class="nav-item middle-icon"><i class="fa-solid fa-trophy"></i><span>Tournament</span></a>
+        <a href="player.html" class="nav-item"><i class="fa-solid fa-user"></i><span>Player</span></a>
+        <a href="community.html" class="nav-item"><i class="fa-regular fa-comments"></i><span>Community</span></a>
+    </nav>
+
+    <script src="app-api.js"></script>
+    <script>
+        let currentPlayer = null;
+        let allPlayers = [];
+        let pendingMatchData = null;
+
+        function seasonToApiSeason(seasonValue) {
+            return seasonValue === "5" ? "2026-S1" : `2026-S${seasonValue}`;
+        }
+
+        function getCurrentApiSeason() {
+            return seasonToApiSeason(document.getElementById("seasonSelect").value);
+        }
+
+        async function loadPageData() {
+            await loadPlayers();
+            await loadMatches();
+        }
+
+        async function loadPlayers() {
+            const result = await TennisApi.request("/api/players");
+            allPlayers = result.players || [];
+            const session = TennisApi.getSession();
+            currentPlayer = allPlayers.find((p) => p.id === session.player_id) || allPlayers[0] || null;
+        }
+
+        async function loadMatches() {
+            const season = getCurrentApiSeason();
+            const result = await TennisApi.request(`/api/matches?season=${encodeURIComponent(season)}&stage=REGULAR`);
+            renderMatches(result.matches || []);
+        }
+
+        function renderMatches(matches) {
+            const container = document.getElementById("matchFeed");
+            container.innerHTML = "";
+            if (!matches.length) {
+                container.innerHTML = `<div class="match-card"><div class="match-left"><span class="winner-name">No match results yet.</span></div></div>`;
+                return;
+            }
+
+            matches.forEach((m) => {
+                container.innerHTML += `
+                    <div class="match-card">
+                        <div class="match-left">
+                            <span class="match-date">${TennisApi.escapeHtml(m.date || "-")}</span>
+                            <span class="winner-name">${TennisApi.escapeHtml(m.winner_name || "TBD")}</span>
+                            <span class="loser-name">${TennisApi.escapeHtml(m.loser_name || "TBD")}</span>
+                        </div>
+                        <div class="match-score-right">
+                            ${TennisApi.escapeHtml(m.score || "-")}
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function openFormModal() {
+            if (!currentPlayer) {
+                alert("No active player found. Please register first.");
+                return;
+            }
+
+            const sel = document.getElementById("opponentSelect");
+            sel.innerHTML = '<option value="" disabled selected>Select Player</option>';
+            allPlayers
+                .filter((p) => p.id !== currentPlayer.id)
+                .forEach((p) => {
+                    sel.innerHTML += `<option value="${p.id}">${TennisApi.escapeHtml(p.display_name)} (${TennisApi.escapeHtml(p.group)})</option>`;
+                });
+
+            document.getElementById("matchDate").valueAsDate = new Date();
+            resetScoreInputs();
+            document.getElementById("formModal").style.display = "flex";
+        }
+
+        function resetScoreInputs() {
+            document.getElementById("scoreContainer").innerHTML = `
+                <div class="score-row">
+                    <span class="score-label">Set 1</span>
+                    <input type="number" class="score-box p1-score" placeholder="6">
+                    <span class="score-divider">:</span>
+                    <input type="number" class="score-box p2-score" placeholder="4">
+                </div>
+                <div class="score-row">
+                    <span class="score-label">Set 2</span>
+                    <input type="number" class="score-box p1-score" placeholder="">
+                    <span class="score-divider">:</span>
+                    <input type="number" class="score-box p2-score" placeholder="">
+                </div>
+            `;
+        }
+
+        function addSetRow() {
+            const count = document.getElementById("scoreContainer").children.length + 1;
+            const div = document.createElement("div");
+            div.className = "score-row";
+            div.innerHTML = `
+                <span class="score-label">Set ${count}</span>
+                <input type="number" class="score-box p1-score" placeholder="-">
+                <span class="score-divider">:</span>
+                <input type="number" class="score-box p2-score" placeholder="-">
+            `;
+            document.getElementById("scoreContainer").appendChild(div);
+        }
+
+        function closeAllModals() {
+            document.getElementById("formModal").style.display = "none";
+            document.getElementById("confirmModal").style.display = "none";
+        }
+
+        function showConfirmation() {
+            if (!currentPlayer) {
+                alert("Please login/register first.");
+                return;
+            }
+
+            const opponentId = document.getElementById("opponentSelect").value;
+            const date = document.getElementById("matchDate").value;
+
+            if (!opponentId) {
+                alert("Please select an opponent");
+                return;
+            }
+            if (!date) {
+                alert("Please select a date");
+                return;
+            }
+
+            const opponent = allPlayers.find((p) => p.id === opponentId);
+            if (!opponent) {
+                alert("Invalid opponent.");
+                return;
+            }
+
+            const p1Inputs = document.querySelectorAll(".p1-score");
+            const p2Inputs = document.querySelectorAll(".p2-score");
+            const scoreParts = [];
+            for (let i = 0; i < p1Inputs.length; i++) {
+                const s1 = p1Inputs[i].value;
+                const s2 = p2Inputs[i].value;
+                if (s1 !== "" && s2 !== "") {
+                    scoreParts.push(`${s1}:${s2}`);
+                }
+            }
+
+            if (!scoreParts.length) {
+                alert("Enter at least one set score");
+                return;
+            }
+
+            const finalScoreString = scoreParts.join(", ");
+            pendingMatchData = {
+                season: getCurrentApiSeason(),
+                stage: "REGULAR",
+                player_a_id: currentPlayer.id,
+                player_b_id: opponent.id,
+                winner_id: currentPlayer.id,
+                score: finalScoreString,
+                date,
+                created_by: "player",
+            };
+
+            document.getElementById("confirmWinnerName").innerText = currentPlayer.display_name;
+            document.getElementById("confirmOpponent").innerText = opponent.display_name;
+            document.getElementById("confirmScore").innerText = finalScoreString;
+            document.getElementById("confirmDate").innerText = date;
+            document.getElementById("formModal").style.display = "none";
+            document.getElementById("confirmModal").style.display = "flex";
+        }
+
+        function backToForm() {
+            document.getElementById("confirmModal").style.display = "none";
+            document.getElementById("formModal").style.display = "flex";
+        }
+
+        async function submitFinal() {
+            if (!pendingMatchData) {
+                return;
+            }
+            try {
+                await TennisApi.request("/api/matches", {
+                    method: "POST",
+                    body: JSON.stringify(pendingMatchData),
+                });
+                closeAllModals();
+                await loadMatches();
+            } catch (error) {
+                alert(error.message);
+            }
+        }
+
+        window.onload = () => {
+            document.getElementById("seasonSelect").addEventListener("change", loadMatches);
+            loadPageData().catch((error) => alert(error.message));
+        };
+    </script>
+</body>
+</html>

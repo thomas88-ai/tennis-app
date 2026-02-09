@@ -1,0 +1,288 @@
+{
+  "players": [
+    {
+      "id": "p_001",
+      "display_name": "Aaron Smith",
+      "ntrp": "4.0",
+      "group": "D2",
+      "phone": "123456789",
+      "country_code": "+60",
+      "whatsapp_number": "60123456789",
+      "email": "aaron@example.com",
+      "bio": "Baseline grinder.",
+      "registered_via_whatsapp": true,
+      "tac_verified": true,
+      "active": true,
+      "created_at": "2026-01-01T00:00:00Z"
+    },
+    {
+      "id": "p_002",
+      "display_name": "Roger Federer",
+      "ntrp": "5.0",
+      "group": "D1",
+      "phone": "111111111",
+      "country_code": "+60",
+      "whatsapp_number": "60111111111",
+      "email": "roger@example.com",
+      "bio": "All-court player.",
+      "registered_via_whatsapp": true,
+      "tac_verified": true,
+      "active": true,
+      "created_at": "2026-01-01T00:00:00Z"
+    },
+    {
+      "id": "p_003",
+      "display_name": "Serena Williams",
+      "ntrp": "5.0",
+      "group": "D1",
+      "phone": "222222222",
+      "country_code": "+60",
+      "whatsapp_number": "60222222222",
+      "email": "serena@example.com",
+      "bio": "Aggressive baseliner.",
+      "registered_via_whatsapp": true,
+      "tac_verified": true,
+      "active": true,
+      "created_at": "2026-01-01T00:00:00Z"
+    },
+    {
+      "id": "p_004",
+      "display_name": "Rafael Nadal",
+      "ntrp": "5.0",
+      "group": "D1",
+      "phone": "333333333",
+      "country_code": "+60",
+      "whatsapp_number": "60333333333",
+      "email": "rafa@example.com",
+      "bio": "Topspin specialist.",
+      "registered_via_whatsapp": true,
+      "tac_verified": true,
+      "active": true,
+      "created_at": "2026-01-01T00:00:00Z"
+    },
+    {
+      "id": "p_005",
+      "display_name": "LeBron James",
+      "ntrp": "3.5",
+      "group": "D3",
+      "phone": "444444444",
+      "country_code": "+60",
+      "whatsapp_number": "60444444444",
+      "email": "lebron@example.com",
+      "bio": "Power game.",
+      "registered_via_whatsapp": true,
+      "tac_verified": true,
+      "active": true,
+      "created_at": "2026-01-01T00:00:00Z"
+    },
+    {
+      "id": "p_006",
+      "display_name": "Tiger Woods",
+      "ntrp": "4.0",
+      "group": "D2",
+      "phone": "555555555",
+      "country_code": "+60",
+      "whatsapp_number": "60555555555",
+      "email": "tiger@example.com",
+      "bio": "Competitive player.",
+      "registered_via_whatsapp": true,
+      "tac_verified": true,
+      "active": true,
+      "created_at": "2026-01-01T00:00:00Z"
+    },
+    {
+      "id": "p_007",
+      "display_name": "Charlie Puth",
+      "ntrp": "3.0",
+      "group": "D4",
+      "phone": "666666666",
+      "country_code": "+60",
+      "whatsapp_number": "60666666666",
+      "email": "charlie@example.com",
+      "bio": "Counter puncher.",
+      "registered_via_whatsapp": true,
+      "tac_verified": true,
+      "active": true,
+      "created_at": "2026-01-01T00:00:00Z"
+    },
+    {
+      "id": "p_008",
+      "display_name": "Rory McIlroy",
+      "ntrp": "2.5",
+      "group": "D5",
+      "phone": "777777777",
+      "country_code": "+60",
+      "whatsapp_number": "60777777777",
+      "email": "rory@example.com",
+      "bio": "Learning topspin serve.",
+      "registered_via_whatsapp": true,
+      "tac_verified": true,
+      "active": true,
+      "created_at": "2026-01-01T00:00:00Z"
+    },
+    {
+      "id": "p_e1c24579f2",
+      "display_name": "thomas lee",
+      "ntrp": "1.0",
+      "group": "D5",
+      "phone": "162685680",
+      "country_code": "+60",
+      "whatsapp_number": "60162685680",
+      "email": "thomas@gmail.com",
+      "bio": "",
+      "registered_via_whatsapp": true,
+      "tac_verified": true,
+      "active": true,
+      "created_at": "2026-02-08T16:43:59Z",
+      "updated_at": "2026-02-08T16:45:18Z"
+    }
+  ],
+  "matches": [
+    {
+      "id": "m_001",
+      "season": "2026-S1",
+      "stage": "REGULAR",
+      "date": "2026-01-30",
+      "player_a_id": "p_002",
+      "player_b_id": "p_004",
+      "winner_id": "p_002",
+      "score": "6:4, 7:6",
+      "status": "completed",
+      "created_at": "2026-01-30T10:00:00Z",
+      "created_by": "admin"
+    },
+    {
+      "id": "m_002",
+      "season": "2026-S1",
+      "stage": "REGULAR",
+      "date": "2026-01-29",
+      "player_a_id": "p_005",
+      "player_b_id": "p_007",
+      "winner_id": "p_005",
+      "score": "6:2, 6:3",
+      "status": "completed",
+      "created_at": "2026-01-29T10:00:00Z",
+      "created_by": "admin"
+    },
+    {
+      "id": "m_003",
+      "season": "2026-S1",
+      "stage": "REGULAR",
+      "date": "2026-01-28",
+      "player_a_id": "p_001",
+      "player_b_id": "p_006",
+      "winner_id": "p_001",
+      "score": "6:4, 6:3",
+      "status": "completed",
+      "created_at": "2026-01-28T10:00:00Z",
+      "created_by": "admin"
+    }
+  ],
+  "tournament_matches": [
+    {
+      "id": "t_001",
+      "season": "2026-S1",
+      "round": "R32",
+      "slot": 1,
+      "player1_id": "p_002",
+      "player2_id": "p_004",
+      "winner_id": "p_002",
+      "score": "7:5, 6:4",
+      "date": "2026-02-01",
+      "updated_at": "2026-02-01T12:00:00Z"
+    },
+    {
+      "id": "t_002",
+      "season": "2026-S1",
+      "round": "R32",
+      "slot": 2,
+      "player1_id": "p_003",
+      "player2_id": "p_005",
+      "winner_id": "p_003",
+      "score": "6:2, 6:1",
+      "date": "2026-02-01",
+      "updated_at": "2026-02-01T12:00:00Z"
+    }
+  ],
+  "news": [
+    {
+      "id": "n_001",
+      "title": "Weather Alert: Rain Delay",
+      "category": "Official",
+      "content": "All matches on Court A and B are delayed by 1 hour.",
+      "image": "",
+      "date": "2026-02-01",
+      "created_at": "2026-02-01T09:00:00Z"
+    },
+    {
+      "id": "n_002",
+      "title": "Match of the Week",
+      "category": "Highlights",
+      "content": "Best comeback this week from 0-5 down.",
+      "image": "",
+      "date": "2026-01-31",
+      "created_at": "2026-01-31T08:30:00Z"
+    },
+    {
+      "id": "n_df112ec95d",
+      "title": "eqwerqwe",
+      "category": "Official",
+      "content": "sdasdasd\n\n#test\n#open",
+      "image": "",
+      "date": "2026-02-09",
+      "created_at": "2026-02-08T16:50:47Z"
+    }
+  ],
+  "community_posts": [
+    {
+      "id": "c_001",
+      "author": "Aaron Smith",
+      "player_id": "p_001",
+      "content": "Anyone free for a hitting session this Sunday?",
+      "created_at": "2026-02-02T08:00:00Z"
+    },
+    {
+      "id": "c_42115e0440",
+      "author": "thomas lee",
+      "player_id": "p_e1c24579f2",
+      "content": "I am boring",
+      "created_at": "2026-02-08T16:44:19Z"
+    }
+  ],
+  "accounts": [
+    {
+      "id": "a_001",
+      "player_id": "p_001",
+      "display_name": "Aaron Smith",
+      "email": "aaron@example.com",
+      "bio": "Baseline grinder.",
+      "created_at": "2026-01-01T00:00:00Z",
+      "updated_at": "2026-01-01T00:00:00Z"
+    },
+    {
+      "id": "a_9af35c5499",
+      "player_id": "p_e1c24579f2",
+      "display_name": "thomas lee",
+      "email": "thomas@gmail.com",
+      "bio": "",
+      "created_at": "2026-02-08T16:43:59Z",
+      "updated_at": "2026-02-08T16:45:18Z"
+    }
+  ],
+  "tac_requests": [
+    {
+      "id": "tac_fcacdacba7",
+      "display_name": "thomas lee",
+      "ntrp": "1.0",
+      "country_code": "+60",
+      "phone": "162685680",
+      "whatsapp_number": "60162685680",
+      "code": "784963",
+      "accept_tac": true,
+      "verified": true,
+      "created_at": "2026-02-08T16:43:48Z",
+      "expires_at": "2026-02-08T16:48:48Z",
+      "verified_at": "2026-02-08T16:43:59Z"
+    }
+  ]
+}

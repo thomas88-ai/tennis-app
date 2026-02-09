@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --bg-color: #121212;
+            --card-bg: #1e1e1e;
+            --text-color: #e0e0e0;
+            --accent: #2196F3; /* Admin Blue */
+            --danger: #ef5350;
+            --success: #66bb6a;
+            --nav-bg: #000000;
+            --header-height: 60px;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding-top: var(--header-height);
+        }
+
+        /* --- HEADER --- */
+        .admin-nav {
+            position: fixed; top: 0; left: 0; width: 100%; height: var(--header-height);
+            background-color: var(--nav-bg); display: flex; justify-content: space-between;
+            align-items: center; padding: 0 20px; box-sizing: border-box; z-index: 100;
+            border-bottom: 1px solid #333;
+        }
+        .logo { font-size: 1.2rem; font-weight: bold; color: var(--accent); display: flex; align-items: center; gap: 10px; }
+        .logout-btn { color: #888; text-decoration: none; font-size: 0.9rem; }
+        .logout-btn:hover { color: #fff; }
+
+        /* --- TABS --- */
+        .tabs {
+            background: #181818;
+            display: flex;
+            justify-content: center;
+            border-bottom: 1px solid #333;
+            position: sticky; top: var(--header-height); z-index: 90;
+        }
+        .tab-btn {
+            background: none; border: none; color: #888;
+            padding: 15px 25px; cursor: pointer; font-size: 1rem; font-weight: bold;
+            border-bottom: 3px solid transparent; transition: 0.3s;
+        }
+        .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+        .tab-btn:hover { color: #ddd; }
+
+        /* --- CONTENT AREA --- */
+        .main-content {
+            padding: 20px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .section { display: none; animation: fadeIn 0.3s ease; }
+        .section.active { display: block; }
+        @keyframes fadeIn { from{opacity:0; transform:translateY(5px);} to{opacity:1; transform:translateY(0);} }
+
+        /* --- COMMON STYLES --- */
+        .action-bar {
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;
+        }
+        .page-title { font-size: 1.5rem; font-weight: bold; margin: 0; }
+        .btn-add {
+            background: var(--accent); color: white; border: none; padding: 10px 20px;
+            border-radius: 5px; cursor: pointer; font-weight: bold; display: flex; align-items: center; gap: 8px;
+        }
+
+        /* --- TABLE STYLES (Players & Matches) --- */
+        .data-table {
+            width: 100%; border-collapse: collapse; background: var(--card-bg);
+            border-radius: 8px; overflow: hidden;
+        }
+        .data-table th, .data-table td {
+            padding: 15px; text-align: left; border-bottom: 1px solid #333;
+        }
+        .data-table th { background: #252525; color: #aaa; font-size: 0.85rem; text-transform: uppercase; }
+        .data-table tr:last-child td { border-bottom: none; }
+        .data-table tr:hover { background: #2a2a2a; }
+
+        .btn-icon {
+            background: none; border: none; cursor: pointer; font-size: 1rem; padding: 5px; margin: 0 5px;
+        }
+        .btn-edit { color: var(--accent); }
+        .btn-delete { color: var(--danger); }
+
+        /* --- NEWS FORM STYLES --- */
+        .news-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;
+        }
+        .admin-card {
+            background: var(--card-bg); border: 1px solid #333; border-radius: 8px; padding: 15px;
+            position: relative;
+        }
+        .admin-card h4 { margin: 0 0 5px 0; color: #fff; }
+        .admin-card p { font-size: 0.85rem; color: #aaa; margin: 0 0 10px 0; }
+        .card-actions { border-top: 1px solid #333; padding-top: 10px; display: flex; justify-content: flex-end; }
+
+        /* --- MODAL --- */
+        .modal-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); z-index: 1000; align-items: center; justify-content: center;
+        }
+        .modal {
+            background: var(--card-bg); padding: 25px; border-radius: 10px;
+            width: 90%; max-width: 450px; border: 1px solid #444;
+        }
+        .modal h3 { margin-top: 0; color: white; }
+        .form-group { margin-bottom: 15px; }
+        .form-label { display: block; color: #aaa; margin-bottom: 5px; font-size: 0.9rem; }
+        .form-input, .form-select, .form-textarea {
+            width: 100%; padding: 10px; background: #121212; border: 1px solid #444;
+            color: white; border-radius: 5px; box-sizing: border-box; font-size: 1rem;
+        }
+        .form-textarea { height: 100px; resize: vertical; }
+        
+        .modal-btns { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+        .btn-cancel { background: transparent; border: 1px solid #444; color: #aaa; padding: 10px 20px; border-radius: 5px; cursor: pointer; }
+        .btn-save { background: var(--accent); border: none; color: white; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+
+    </style>
+</head>
+<body>
+
+    <nav class="admin-nav">
+        <div class="logo"><i class="fa-solid fa-user-shield"></i> Admin Panel</div>
+        <a href="login.html" class="logout-btn">Logout <i class="fa-solid fa-right-from-bracket"></i></a>
+    </nav>
+
+    <div class="tabs">
+        <button class="tab-btn active" onclick="showTab('players', this)">Players</button>
+        <button class="tab-btn" onclick="showTab('matches', this)">Matches</button>
+        <button class="tab-btn" onclick="showTab('news', this)">News CMS</button>
+    </div>
+
+    <div class="main-content">
+
+        <div id="players" class="section active">
+            <div class="action-bar">
+                <h2 class="page-title">Player Database</h2>
+                <button class="btn-add" onclick="openPlayerModal()"><i class="fa-solid fa-plus"></i> Add Player</button>
+            </div>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Group</th>
+                        <th>NTRP</th>
+                        <th>Points</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="playerTableBody">
+                    </tbody>
+            </table>
+        </div>
+
+        <div id="matches" class="section">
+            <div class="action-bar">
+                <h2 class="page-title">Match Log</h2>
+                <button class="btn-add" onclick="quickAddMatch()"><i class="fa-solid fa-plus"></i> Add Match</button>
+            </div>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Winner</th>
+                        <th>Loser</th>
+                        <th>Score</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="matchTableBody">
+                    </tbody>
+            </table>
+        </div>
+
+        <div id="news" class="section">
+            <div class="action-bar">
+                <h2 class="page-title">News Posts</h2>
+                <button class="btn-add" onclick="openNewsModal()"><i class="fa-solid fa-pen"></i> Create Post</button>
+            </div>
+            <div class="news-grid" id="newsGrid">
+                </div>
+        </div>
+
+    </div>
+
+    <div class="modal-overlay" id="playerModal">
+        <div class="modal">
+            <h3>Add / Edit Player</h3>
+            <div class="form-group">
+                <label class="form-label">Full Name</label>
+                <input type="text" class="form-input" id="pName">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Group</label>
+                <select class="form-select" id="pGroup">
+                    <option value="D1">D1</option>
+                    <option value="D2">D2</option>
+                    <option value="D3">D3</option>
+                    <option value="D4">D4</option>
+                    <option value="D5">D5</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">NTRP</label>
+                <input type="text" class="form-input" id="pNtrp" placeholder="e.g. 4.0">
+            </div>
+            <div class="modal-btns">
+                <button class="btn-cancel" onclick="closeModals()">Cancel</button>
+                <button class="btn-save" onclick="savePlayer()">Save Player</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="newsModal">
+        <div class="modal">
+            <h3>Create News Post</h3>
+            <div class="form-group">
+                <label class="form-label">Title</label>
+                <input type="text" class="form-input" id="nTitle">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Category</label>
+                <select class="form-select" id="nCategory">
+                    <option value="Official">Official</option>
+                    <option value="Highlights">Highlights</option>
+                    <option value="Spotlight">Spotlight</option>
+                    <option value="Social">Social</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Content</label>
+                <textarea class="form-textarea" id="nContent"></textarea>
+            </div>
+            <div class="modal-btns">
+                <button class="btn-cancel" onclick="closeModals()">Cancel</button>
+                <button class="btn-save" onclick="saveNews()">Publish</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app-api.js"></script>
+    <script>
+        let players = [];
+        let matches = [];
+        let news = [];
+        let editingPlayerId = null;
+
+        function getAdminToken() {
+            let token = localStorage.getItem("tennis_admin_token") || "";
+            if (!token) {
+                token = prompt("Enter admin token (default: admin123):") || "";
+                if (token) {
+                    localStorage.setItem("tennis_admin_token", token);
+                }
+            }
+            return token;
+        }
+
+        function adminHeaders() {
+            const token = getAdminToken();
+            if (!token) {
+                throw new Error("Admin token required.");
+            }
+            return { "x-admin-token": token };
+        }
+
+        function showTab(tabName, btn) {
+            document.querySelectorAll(".section").forEach((el) => el.classList.remove("active"));
+            document.querySelectorAll(".tab-btn").forEach((el) => el.classList.remove("active"));
+            document.getElementById(tabName).classList.add("active");
+            if (btn) {
+                btn.classList.add("active");
+            }
+        }
+
+        async function loadData() {
+            try {
+                const [playersRes, matchesRes, newsRes] = await Promise.all([
+                    TennisApi.request("/api/players"),
+                    TennisApi.request("/api/matches?season=2026-S1"),
+                    TennisApi.request("/api/news"),
+                ]);
+                players = playersRes.players || [];
+                matches = matchesRes.matches || [];
+                news = newsRes.news || [];
+                renderPlayers();
+                renderMatches();
+                renderNews();
+            } catch (error) {
+                alert(error.message);
+            }
+        }
+
+        function renderPlayers() {
+            const tbody = document.getElementById("playerTableBody");
+            tbody.innerHTML = "";
+            players.forEach((p) => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${TennisApi.escapeHtml(p.display_name)}<br><span style="font-size:0.7rem;color:#777;">${TennisApi.escapeHtml(p.id)}</span></td>
+                        <td><span style="background:#333; padding:2px 6px; border-radius:4px;">${TennisApi.escapeHtml(p.group || "D5")}</span></td>
+                        <td>${TennisApi.escapeHtml(p.ntrp || "-")}</td>
+                        <td>${TennisApi.escapeHtml(p.phone || "-")}</td>
+                        <td>
+                            <button class="btn-icon btn-edit" onclick="editPlayer('${p.id}')"><i class="fa-solid fa-pen"></i></button>
+                            <button class="btn-icon btn-delete" onclick="deletePlayer('${p.id}')"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function renderMatches() {
+            const tbody = document.getElementById("matchTableBody");
+            tbody.innerHTML = "";
+            matches.forEach((m) => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${TennisApi.escapeHtml(m.date || "-")}</td>
+                        <td style="color:var(--success); font-weight:bold;">${TennisApi.escapeHtml(m.winner_name || "TBD")}</td>
+                        <td style="color:#888;">${TennisApi.escapeHtml(m.loser_name || "TBD")}</td>
+                        <td>${TennisApi.escapeHtml(m.score || "-")}</td>
+                        <td>
+                            <button class="btn-icon btn-delete" title="Delete Match" onclick="deleteMatch('${m.id}')"><i class="fa-solid fa-ban"></i></button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function renderNews() {
+            const grid = document.getElementById("newsGrid");
+            grid.innerHTML = "";
+            news.forEach((n) => {
+                let badgeColor = "#888";
+                if (n.category === "Official") badgeColor = "#ef5350";
+                if (n.category === "Social") badgeColor = "#ba68c8";
+
+                grid.innerHTML += `
+                    <div class="admin-card">
+                        <span style="color:${badgeColor}; font-size:0.7rem; font-weight:bold; text-transform:uppercase;">${TennisApi.escapeHtml(n.category)}</span>
+                        <h4>${TennisApi.escapeHtml(n.title)}</h4>
+                        <p>${TennisApi.escapeHtml(n.content)}</p>
+                        <div class="card-actions">
+                            <button class="btn-icon btn-delete" onclick="deleteNews('${n.id}')"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function openPlayerModal() {
+            editingPlayerId = null;
+            document.getElementById("pName").value = "";
+            document.getElementById("pGroup").value = "D1";
+            document.getElementById("pNtrp").value = "";
+            document.getElementById("playerModal").style.display = "flex";
+        }
+
+        function editPlayer(id) {
+            const player = players.find((p) => p.id === id);
+            if (!player) return;
+            editingPlayerId = id;
+            document.getElementById("pName").value = player.display_name || "";
+            document.getElementById("pGroup").value = player.group || "D1";
+            document.getElementById("pNtrp").value = player.ntrp || "";
+            document.getElementById("playerModal").style.display = "flex";
+        }
+
+        async function savePlayer() {
+            const display_name = document.getElementById("pName").value.trim();
+            const group = document.getElementById("pGroup").value;
+            const ntrp = document.getElementById("pNtrp").value.trim();
+            if (!display_name) {
+                alert("Player name is required.");
+                return;
+            }
+
+            try {
+                if (editingPlayerId) {
+                    await TennisApi.request(`/api/admin/players/${editingPlayerId}`, {
+                        method: "PUT",
+                        headers: adminHeaders(),
+                        body: JSON.stringify({ display_name, group, ntrp }),
+                    });
+                } else {
+                    await TennisApi.request("/api/admin/players", {
+                        method: "POST",
+                        headers: adminHeaders(),
+                        body: JSON.stringify({ display_name, group, ntrp }),
+                    });
+                }
+                closeModals();
+                await loadData();
+            } catch (error) {
+                alert(error.message);
+            }
+        }
+
+        async function deletePlayer(id) {
+            if (!confirm("Delete this player?")) return;
+            try {
+                await TennisApi.request(`/api/admin/players/${id}`, {
+                    method: "DELETE",
+                    headers: adminHeaders(),
+                });
+                await loadData();
+            } catch (error) {
+                alert(error.message);
+            }
+        }
+
+        async function quickAddMatch() {
+            const allNames = players.map((p) => p.display_name).join(", ");
+            const playerAName = prompt(`Player A name:\n${allNames}`);
+            const playerBName = prompt("Player B name:");
+            const score = prompt("Score (example: 6:4, 7:5):");
+            const date = prompt("Date (YYYY-MM-DD):", new Date().toISOString().slice(0, 10));
+            if (!playerAName || !playerBName || !score || !date) return;
+
+            const playerA = players.find((p) => p.display_name.toLowerCase() === playerAName.toLowerCase());
+            const playerB = players.find((p) => p.display_name.toLowerCase() === playerBName.toLowerCase());
+            if (!playerA || !playerB) {
+                alert("Player names not found.");
+                return;
+            }
+
+            try {
+                await TennisApi.request("/api/admin/matches", {
+                    method: "POST",
+                    headers: adminHeaders(),
+                    body: JSON.stringify({
+                        season: "2026-S1",
+                        stage: "REGULAR",
+                        player_a_id: playerA.id,
+                        player_b_id: playerB.id,
+                        score,
+                        date,
+                        winner_id: playerA.id,
+                    }),
+                });
+                await loadData();
+            } catch (error) {
+                alert(error.message);
+            }
+        }
+
+        async function deleteMatch(id) {
+            if (!confirm("Remove this match result? This affects rankings.")) return;
+            try {
+                await TennisApi.request(`/api/admin/matches/${id}`, {
+                    method: "DELETE",
+                    headers: adminHeaders(),
+                });
+                await loadData();
+            } catch (error) {
+                alert(error.message);
+            }
+        }
+
+        function openNewsModal() {
+            document.getElementById("newsModal").style.display = "flex";
+        }
+
+        async function saveNews() {
+            const title = document.getElementById("nTitle").value.trim();
+            const category = document.getElementById("nCategory").value;
+            const content = document.getElementById("nContent").value.trim();
+            if (!title || !content) {
+                alert("Title and content are required.");
+                return;
+            }
+            try {
+                await TennisApi.request("/api/admin/news", {
+                    method: "POST",
+                    headers: adminHeaders(),
+                    body: JSON.stringify({ title, category, content }),
+                });
+                closeModals();
+                await loadData();
+            } catch (error) {
+                alert(error.message);
+            }
+        }
+
+        async function deleteNews(id) {
+            if (!confirm("Delete this post?")) return;
+            try {
+                await TennisApi.request(`/api/admin/news/${id}`, {
+                    method: "DELETE",
+                    headers: adminHeaders(),
+                });
+                await loadData();
+            } catch (error) {
+                alert(error.message);
+            }
+        }
+
+        function closeModals() {
+            document.querySelectorAll(".modal-overlay").forEach((el) => {
+                el.style.display = "none";
+            });
+            document.querySelectorAll("input, textarea").forEach((el) => {
+                el.value = "";
+            });
+            editingPlayerId = null;
+        }
+
+        window.onload = loadData;
+    </script>
+</body>
+</html>

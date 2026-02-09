@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>News Feed</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --bg-color: #1a1a1a;
+            --card-bg: #2d2d2d;
+            --text-color: #e0e0e0;
+            --accent: #4caf50;
+            --admin-color: #2196F3; /* Blue for Admin Actions */
+            --danger: #ef5350;
+            --nav-bg: #000000;
+            --header-height: 60px;
+            --footer-height: 70px;
+            --toolbar-height: 110px;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            padding-top: calc(var(--header-height) + var(--toolbar-height));
+            padding-bottom: var(--footer-height);
+        }
+
+        /* --- HEADER --- */
+        .top-nav {
+            position: fixed; top: 0; left: 0; width: 100%; height: var(--header-height);
+            background-color: var(--nav-bg); display: flex; justify-content: space-between;
+            align-items: center; padding: 0 20px; box-sizing: border-box; z-index: 101;
+            border-bottom: 1px solid #333;
+        }
+        .logo { font-size: 1.5rem; font-weight: bold; color: var(--accent); text-decoration: none; }
+        .auth-buttons a { text-decoration: none; color: #fff; font-size: 0.9rem; border: 1px solid #555; padding: 5px 10px; border-radius: 4px; }
+
+        /* --- TOOLBAR --- */
+        .control-bar {
+            position: fixed; top: var(--header-height); left: 0; width: 100%; height: var(--toolbar-height);
+            background-color: #151515; z-index: 100; border-bottom: 1px solid #333;
+            display: flex; flex-direction: column; justify-content: center; padding: 10px 0;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        }
+
+        .search-wrapper {
+            padding: 0 15px; position: relative; margin-bottom: 10px;
+            max-width: 600px; margin-left: auto; margin-right: auto; width: 100%; box-sizing: border-box;
+        }
+        .search-wrapper i { position: absolute; left: 30px; top: 50%; transform: translateY(-50%); color: #888; }
+        .search-input {
+            width: 100%; padding: 10px 10px 10px 40px; background: #252525; border: 1px solid #444;
+            border-radius: 20px; color: white; outline: none; font-size: 0.9rem;
+        }
+
+        .tabs-wrapper {
+            display: flex; gap: 10px; padding: 0 15px; overflow-x: auto; white-space: nowrap;
+            -ms-overflow-style: none; scrollbar-width: none;
+        }
+        .tabs-wrapper::-webkit-scrollbar { display: none; }
+
+        .filter-chip {
+            background: #333; color: #aaa; border: 1px solid #444; padding: 6px 16px;
+            border-radius: 20px; font-size: 0.85rem; cursor: pointer; transition: 0.2s;
+        }
+        .filter-chip.active { background: var(--accent); color: white; border-color: var(--accent); font-weight: bold; }
+
+        /* --- FEED --- */
+        .news-feed {
+            padding: 15px; max-width: 600px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px;
+        }
+
+        .news-card {
+            background-color: var(--card-bg); border-radius: 12px; overflow: hidden;
+            border: 1px solid #333; animation: fadeIn 0.4s ease; position: relative;
+        }
+        @keyframes fadeIn { from{opacity:0; transform:translateY(10px);} to{opacity:1; transform:translateY(0);} }
+
+        /* Delete Button (ADMIN ONLY) */
+        .btn-delete-post {
+            position: absolute; top: 10px; right: 10px;
+            background: rgba(0,0,0,0.6); color: var(--danger);
+            border: 1px solid var(--danger); border-radius: 50%;
+            width: 32px; height: 32px; cursor: pointer;
+            display: none; /* Hidden by default */
+            align-items: center; justify-content: center; z-index: 10;
+        }
+        /* Show when admin class is active */
+        body.admin-mode .btn-delete-post { display: flex; }
+
+        .card-image {
+            width: 100%; height: 180px; background-color: #333;
+            background-size: cover; background-position: center;
+        }
+        
+        .card-body { padding: 15px; }
+        .card-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        
+        .badge { font-size: 0.7rem; font-weight: bold; text-transform: uppercase; padding: 3px 8px; border-radius: 4px; }
+        .badge-official { background: rgba(229, 115, 115, 0.15); color: #e57373; border: 1px solid #e57373; }
+        .badge-highlights { background: rgba(255, 183, 77, 0.15); color: #ffb74d; border: 1px solid #ffb74d; }
+        .badge-spotlight { background: rgba(79, 195, 247, 0.15); color: #4fc3f7; border: 1px solid #4fc3f7; }
+        .badge-social { background: rgba(186, 104, 200, 0.15); color: #ba68c8; border: 1px solid #ba68c8; }
+
+        .post-date { font-size: 0.75rem; color: #777; }
+        .card-title { margin: 0 0 8px 0; font-size: 1.1rem; color: #fff; }
+        .card-text { font-size: 0.9rem; color: #ccc; line-height: 1.5; margin: 0; }
+        .hashtag { color: #4fc3f7; cursor: pointer; font-weight: 500; }
+
+        /* --- ADMIN FLOATING BUTTON --- */
+        .fab-add {
+            position: fixed; bottom: 90px; right: 20px;
+            width: 56px; height: 56px; border-radius: 50%;
+            background: var(--admin-color); color: white;
+            border: none; box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+            font-size: 1.5rem; cursor: pointer;
+            display: none; /* Hidden by default */
+            align-items: center; justify-content: center; z-index: 99;
+            transition: transform 0.2s;
+        }
+        .fab-add:active { transform: scale(0.9); }
+        body.admin-mode .fab-add { display: flex; }
+
+        /* --- MODAL --- */
+        .modal-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9); z-index: 1000; align-items: center; justify-content: center;
+        }
+        .modal {
+            background: var(--card-bg); padding: 25px; border-radius: 12px;
+            width: 90%; max-width: 400px; border: 1px solid #444;
+            display: flex; flex-direction: column; gap: 15px;
+        }
+        .modal h3 { margin: 0; color: white; text-align: center; }
+        .form-label { display: block; color: #aaa; margin-bottom: 5px; font-size: 0.9rem; }
+        .form-control { width: 100%; padding: 12px; background: #1a1a1a; border: 1px solid #444; color: white; border-radius: 5px; box-sizing: border-box; }
+        .form-textarea { height: 100px; resize: vertical; }
+
+        .modal-actions { display: flex; gap: 10px; margin-top: 10px; }
+        .btn-post { flex: 1; background: var(--admin-color); color: white; border: none; padding: 12px; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        .btn-cancel { flex: 1; background: transparent; color: #888; border: 1px solid #444; padding: 12px; border-radius: 6px; cursor: pointer; }
+
+        /* --- FOOTER --- */
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 0; width: 100%; height: var(--footer-height);
+            background-color: var(--nav-bg); border-top: 1px solid #333;
+            display: flex; justify-content: space-around; align-items: center; z-index: 100;
+        }
+        .nav-item { display: flex; flex-direction: column; align-items: center; text-decoration: none; color: #888; font-size: 0.75rem; width: 20%; }
+        .nav-item i { font-size: 1.4rem; margin-bottom: 5px; }
+        .nav-item.active { color: var(--accent); }
+        .nav-item.middle-icon i {
+            font-size: 1.8rem; background: #222; padding: 10px; border-radius: 50%;
+            margin-top: -20px; border: 2px solid var(--nav-bg); color: #888;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.5);
+        }
+
+        /* SIMULATION TOGGLE (For Demo Purpose Only) */
+        .simulation-toggle {
+            text-align: center; margin-top: 20px; padding-bottom: 20px;
+        }
+        .btn-sim {
+            background: #333; color: #aaa; border: 1px solid #555;
+            padding: 5px 15px; border-radius: 15px; font-size: 0.75rem; cursor: pointer;
+        }
+        body.admin-mode .btn-sim { color: var(--admin-color); border-color: var(--admin-color); }
+
+    </style>
+</head>
+<body id="pageBody">
+
+    <nav class="top-nav">
+        <a href="#" class="logo">LOGO</a>
+        <div class="auth-buttons">
+            <a href="login.html">Login</a>
+        </div>
+    </nav>
+
+    <div class="control-bar">
+        <div class="search-wrapper">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="searchInput" class="search-input" placeholder="Search..." onkeyup="handleSearch()">
+        </div>
+        <div class="tabs-wrapper">
+            <button class="filter-chip active" onclick="filterCategory('All', this)">All</button>
+            <button class="filter-chip" onclick="filterCategory('Official', this)">Official</button>
+            <button class="filter-chip" onclick="filterCategory('Highlights', this)">Highlights</button>
+            <button class="filter-chip" onclick="filterCategory('Spotlight', this)">Spotlight</button>
+            <button class="filter-chip" onclick="filterCategory('Social', this)">Social</button>
+        </div>
+    </div>
+
+    <main>
+        <div class="news-feed" id="newsFeed">
+            </div>
+
+        <div class="simulation-toggle">
+            <button class="btn-sim" onclick="toggleAdminMode()">
+                <i class="fa-solid fa-user-gear"></i> Switch Admin/User Mode
+            </button>
+        </div>
+    </main>
+
+    <button class="fab-add" onclick="openModal()"><i class="fa-solid fa-plus"></i></button>
+
+    <div class="modal-overlay" id="postModal">
+        <div class="modal">
+            <h3>New Post</h3>
+            <div>
+                <label class="form-label">Title</label>
+                <input type="text" id="nTitle" class="form-control">
+            </div>
+            <div>
+                <label class="form-label">Category</label>
+                <select id="nCategory" class="form-control">
+                    <option value="Official">Official</option>
+                    <option value="Highlights">Highlights</option>
+                    <option value="Spotlight">Spotlight</option>
+                    <option value="Social">Social</option>
+                </select>
+            </div>
+            <div>
+                <label class="form-label">Content</label>
+                <textarea id="nContent" class="form-control form-textarea"></textarea>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+                <button class="btn-post" onclick="savePost()">Publish</button>
+            </div>
+        </div>
+    </div>
+
+    <nav class="bottom-nav">
+        <a href="table.html" class="nav-item"><i class="fa-solid fa-list-ol"></i><span>Table</span></a>
+        <a href="match.html" class="nav-item"><i class="fa-solid fa-pen-to-square"></i><span>Match</span></a>
+        <a href="tournament.html" class="nav-item middle-icon"><i class="fa-solid fa-trophy"></i><span>Tournament</span></a>
+        <a href="player.html" class="nav-item"><i class="fa-solid fa-user"></i><span>Player</span></a>
+        <a href="news.html" class="nav-item active"><i class="fa-regular fa-newspaper"></i><span>News</span></a>
+    </nav>
+
+    <script>
+        // --- DATA WITH LOCALSTORAGE ---
+        // 1. Check if we have saved news, otherwise use default
+        const defaultNews = [
+            { id: 1, title: "⚠️ Rain Delay", category: "Official", date: "Today, 4:00 PM", content: "All matches delayed by 1 hour. #RainDelay" },
+            { id: 2, title: "Match of the Week", category: "Highlights", date: "Yesterday", content: "Roger vs Rafa was insane! #EpicMatch" },
+            { id: 3, title: "BBQ Night 🍖", category: "Social", date: "2026-01-25", content: "Join us this Saturday! #Community" }
+        ];
+
+        let newsData = JSON.parse(localStorage.getItem('newsData')) || defaultNews;
+        
+        let currentCategory = "All";
+        let searchTerm = "";
+        let isAdmin = false; // Toggle state
+
+        // --- RENDER ---
+        function renderNews() {
+            const container = document.getElementById('newsFeed');
+            container.innerHTML = '';
+
+            const filtered = newsData.filter(item => {
+                const catMatch = currentCategory === "All" || item.category === currentCategory;
+                const textMatch = item.title.toLowerCase().includes(searchTerm) || 
+                                  item.content.toLowerCase().includes(searchTerm);
+                return catMatch && textMatch;
+            });
+
+            if(filtered.length === 0) {
+                container.innerHTML = `<div class="empty-state">No posts found.</div>`;
+                return;
+            }
+
+            filtered.forEach(item => {
+                let badgeClass = 'badge-social';
+                if(item.category === 'Official') badgeClass = 'badge-official';
+                if(item.category === 'Highlights') badgeClass = 'badge-highlights';
+                if(item.category === 'Spotlight') badgeClass = 'badge-spotlight';
+
+                const formattedContent = item.content.replace(/#(\w+)/g, '<span class="hashtag">#$1</span>');
+
+                const card = document.createElement('div');
+                card.className = 'news-card';
+                card.innerHTML = `
+                    <button class="btn-delete-post" onclick="deletePost(${item.id})"><i class="fa-solid fa-trash"></i></button>
+                    <div class="card-body">
+                        <div class="card-meta">
+                            <span class="badge ${badgeClass}">${item.category}</span>
+                            <span class="post-date">${item.date}</span>
+                        </div>
+                        <h3 class="card-title">${item.title}</h3>
+                        <p class="card-text">${formattedContent}</p>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // --- ADMIN TOGGLE ---
+        function toggleAdminMode() {
+            isAdmin = !isAdmin;
+            if(isAdmin) {
+                document.getElementById('pageBody').classList.add('admin-mode');
+                alert("Admin Mode ON: You can now Add (+) and Delete (Trash icon) posts.");
+            } else {
+                document.getElementById('pageBody').classList.remove('admin-mode');
+            }
+        }
+
+        // --- CRUD ACTIONS ---
+        function openModal() { document.getElementById('postModal').style.display = 'flex'; }
+        function closeModal() { document.getElementById('postModal').style.display = 'none'; }
+
+        function savePost() {
+            const title = document.getElementById('nTitle').value;
+            const category = document.getElementById('nCategory').value;
+            const content = document.getElementById('nContent').value;
+
+            if(!title || !content) { alert("Please fill all fields"); return; }
+
+            const newPost = {
+                id: Date.now(),
+                title: title,
+                category: category,
+                date: "Just Now",
+                content: content
+            };
+
+            // Add to top
+            newsData.unshift(newPost);
+            
+            // Save to Browser Memory
+            localStorage.setItem('newsData', JSON.stringify(newsData));
+            
+            renderNews();
+            closeModal();
+            // Clear inputs
+            document.getElementById('nTitle').value = '';
+            document.getElementById('nContent').value = '';
+        }
+
+        function deletePost(id) {
+            if(confirm("Are you sure you want to delete this post?")) {
+                newsData = newsData.filter(item => item.id !== id);
+                localStorage.setItem('newsData', JSON.stringify(newsData));
+                renderNews();
+            }
+        }
+
+        // --- FILTERS ---
+        function filterCategory(category, btnElement) {
+            currentCategory = category;
+            document.querySelectorAll('.filter-chip').forEach(btn => btn.classList.remove('active'));
+            btnElement.classList.add('active');
+            renderNews();
+        }
+
+        function handleSearch() {
+            searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            renderNews();
+        }
+
+        window.onload = renderNews;
+    </script>
+</body>
+</html>

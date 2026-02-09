@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tournament Playoff</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --bg-color: #1a1a1a;
+            --card-bg: #2d2d2d;
+            --text-color: #e0e0e0;
+            --accent: #4caf50;
+            --danger: #e57373;
+            --nav-bg: #000000;
+            --line-color: #555;
+            --match-width: 190px;
+            --header-height: 60px;
+            --footer-height: 70px;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: var(--header-height) 0 var(--footer-height) 0;
+            overflow-x: hidden;
+        }
+
+        /* --- HEADER --- */
+        .top-nav {
+            position: fixed; top: 0; left: 0; width: 100%; height: var(--header-height);
+            background-color: var(--nav-bg); display: flex; justify-content: space-between;
+            align-items: center; padding: 0 20px; box-sizing: border-box; z-index: 100;
+            border-bottom: 1px solid #333;
+        }
+        .logo { font-size: 1.5rem; font-weight: bold; color: var(--accent); text-decoration: none; }
+        .auth-buttons a { text-decoration: none; color: #fff; font-size: 0.9rem; border: 1px solid #555; padding: 5px 10px; border-radius: 4px; margin-left: 10px;}
+
+        /* --- TOURNAMENT INFO --- */
+        .tournament-header {
+            background-color: #222; padding: 20px; text-align: center; border-bottom: 1px solid #333;
+        }
+        .tournament-header h3 { margin: 0 0 10px 0; color: #fff; text-transform: uppercase; letter-spacing: 1px; }
+
+        .countdown-container {
+            display: inline-block; background: rgba(229, 115, 115, 0.1); border: 1px solid var(--danger);
+            padding: 8px 15px; border-radius: 5px; color: var(--danger); font-size: 0.9rem; font-weight: bold;
+        }
+
+        /* --- BRACKET --- */
+        .bracket-container {
+            display: flex; padding: 40px; overflow-x: auto; min-height: 60vh;
+        }
+
+        .round {
+            display: flex; flex-direction: column; justify-content: space-around;
+            margin-right: 40px; min-width: var(--match-width); position: relative;
+        }
+
+        .round-title {
+            text-align: center; font-size: 0.85rem; color: #888; margin-bottom: 20px;
+            position: absolute; top: -30px; width: 100%; text-transform: uppercase;
+        }
+
+        /* COMPACT MATCH CARD */
+        .match {
+            background-color: var(--card-bg);
+            border: 1px solid #444;
+            border-radius: 6px;
+            padding: 6px 10px; /* Tighter padding */
+            margin: 10px 0;
+            cursor: pointer;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            /* Height Logic */
+            min-height: 50px; 
+            height: auto;
+            transition: 0.2s;
+            gap: 2px;
+        }
+
+        .match:hover { border-color: var(--accent); }
+
+        .player-row {
+            display: flex; justify-content: space-between; align-items: center;
+            font-size: 0.85rem; color: #ccc;
+        }
+        .player-row.winner { color: var(--accent); font-weight: bold; }
+        
+        .score-display {
+            font-size: 0.75rem; color: #fff; margin-top: 6px; text-align: center;
+            border-top: 1px solid #444; padding-top: 4px;
+            background: #222; border-radius: 4px;
+            display: none; /* Hidden by default */
+        }
+        /* Only show score if match has result */
+        .match.has-result .score-display { display: block; }
+
+        .round:not(:last-child) .match::after {
+            content: ''; position: absolute; right: -20px; top: 50%;
+            width: 20px; height: 2px; background-color: var(--line-color);
+        }
+
+        /* --- MODALS (Form & Confirm) --- */
+        .modal-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9); z-index: 1000; align-items: center; justify-content: center;
+        }
+        .modal {
+            background: var(--card-bg); padding: 20px; border-radius: 12px;
+            width: 90%; max-width: 380px; border: 1px solid #444;
+            display: flex; flex-direction: column; gap: 15px;
+            max-height: 90vh; overflow-y: auto;
+        }
+        .modal h3 { margin: 0; color: white; text-align: center; border-bottom: 1px solid #444; padding-bottom: 10px; }
+        
+        .form-label { display: block; color: #aaa; font-size: 0.85rem; margin-bottom: 5px; }
+        .form-control { width: 100%; padding: 10px; background: #1a1a1a; border: 1px solid #444; color: white; border-radius: 5px; box-sizing: border-box; }
+
+        /* Winner Selection Toggle */
+        .winner-toggle { display: flex; gap: 10px; }
+        .toggle-btn {
+            flex: 1; padding: 12px; background: #333; color: #aaa; border: 1px solid #444;
+            border-radius: 6px; cursor: pointer; font-size: 0.9rem; transition: 0.2s;
+        }
+        .toggle-btn.selected { background: var(--accent); color: #fff; border-color: var(--accent); font-weight: bold; }
+
+        /* Score Boxes */
+        .score-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+        .score-label { width: 50px; font-size: 0.85rem; color: #888; }
+        .score-box { width: 50px; height: 40px; text-align: center; background: #000; border: 1px solid #555; color: white; border-radius: 4px; font-size: 1.1rem; }
+        .score-divider { color: #555; font-weight: bold; }
+        .btn-add-set { background: none; border: 1px dashed #555; color: #888; width: 100%; padding: 8px; border-radius: 5px; cursor: pointer; font-size: 0.8rem; }
+
+        /* Actions */
+        .modal-actions { display: flex; gap: 10px; margin-top: 10px; }
+        .btn-confirm { flex: 1; background: var(--accent); color: white; border: none; padding: 12px; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        .btn-cancel { flex: 1; background: transparent; color: #888; border: 1px solid #444; padding: 12px; border-radius: 6px; cursor: pointer; }
+
+        /* Confirmation View */
+        .confirm-summary { text-align: center; background: #222; padding: 15px; border-radius: 8px; }
+        .vs-line { font-size: 1rem; margin-bottom: 5px; }
+        .score-line { font-size: 1.4rem; color: var(--accent); font-weight: bold; letter-spacing: 1px; }
+
+        /* --- FOOTER --- */
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 0; width: 100%; height: var(--footer-height);
+            background-color: var(--nav-bg); border-top: 1px solid #333;
+            display: flex; justify-content: space-around; align-items: center; z-index: 100;
+        }
+        .nav-item { display: flex; flex-direction: column; align-items: center; text-decoration: none; color: #888; font-size: 0.75rem; width: 20%; }
+        .nav-item i { font-size: 1.4rem; margin-bottom: 5px; }
+        .nav-item.active { color: var(--accent); }
+        .nav-item.middle-icon i {
+            font-size: 1.8rem; background: #222; padding: 10px; border-radius: 50%;
+            margin-top: -20px; border: 2px solid var(--nav-bg); color: #888;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.5);
+        }
+
+    </style>
+</head>
+<body>
+
+    <nav class="top-nav">
+        <a href="#" class="logo">LOGO</a>
+        <div class="auth-buttons">
+            <a href="login.html">Login</a>
+        </div>
+    </nav>
+
+    <main>
+        <div class="tournament-header">
+            <h3>Playoff Season 5</h3>
+            <div class="countdown-container">
+                <i class="fa-regular fa-clock timer-icon"></i>
+                Round 32 Ends: <span id="countdownTimer">Loading...</span>
+            </div>
+        </div>
+
+        <div class="bracket-container" id="bracketContainer">
+            </div>
+    </main>
+
+    <div class="modal-overlay" id="formModal">
+        <div class="modal">
+            <h3>Update Match Result</h3>
+            
+            <div>
+                <label class="form-label">Who Won?</label>
+                <div class="winner-toggle">
+                    <button id="btnP1" class="toggle-btn" onclick="selectWinner(1)">Player 1</button>
+                    <button id="btnP2" class="toggle-btn" onclick="selectWinner(2)">Player 2</button>
+                </div>
+            </div>
+
+            <div>
+                <label class="form-label">Match Date</label>
+                <input type="date" id="matchDate" class="form-control">
+            </div>
+
+            <div>
+                <label class="form-label">Score (P1 vs P2)</label>
+                <div id="scoreContainer">
+                    <div class="score-row">
+                        <span class="score-label">Set 1</span>
+                        <input type="number" class="score-box p1-score" placeholder="-">
+                        <span class="score-divider">:</span>
+                        <input type="number" class="score-box p2-score" placeholder="-">
+                    </div>
+                    <div class="score-row">
+                        <span class="score-label">Set 2</span>
+                        <input type="number" class="score-box p1-score" placeholder="-">
+                        <span class="score-divider">:</span>
+                        <input type="number" class="score-box p2-score" placeholder="-">
+                    </div>
+                </div>
+                <button type="button" class="btn-add-set" onclick="addSetRow()">+ Add Set 3</button>
+            </div>
+
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="closeAllModals()">Cancel</button>
+                <button class="btn-confirm" onclick="showConfirmation()">Next</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="confirmModal">
+        <div class="modal">
+            <h3>Confirm Update</h3>
+            
+            <div class="confirm-summary">
+                <div style="color:#aaa; font-size:0.8rem;">Winner</div>
+                <div id="confirmWinnerName" style="color:var(--accent); font-weight:bold; font-size:1.2rem; margin-bottom:10px;">Player Name</div>
+                
+                <div style="color:#aaa; font-size:0.8rem;">Final Score</div>
+                <div class="score-line" id="confirmScore">6:4 , 7:6</div>
+                
+                <div style="font-size:0.8rem; color:#888; margin-top:5px;" id="confirmDate">2026-01-30</div>
+            </div>
+
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="backToForm()">Back</button>
+                <button class="btn-confirm" onclick="submitFinal()">Submit</button>
+            </div>
+        </div>
+    </div>
+
+    <nav class="bottom-nav">
+        <a href="table.html" class="nav-item"><i class="fa-solid fa-list-ol"></i><span>Table</span></a>
+        <a href="match.html" class="nav-item"><i class="fa-solid fa-pen-to-square"></i><span>Match</span></a>
+        <a href="tournament.html" class="nav-item active middle-icon"><i class="fa-solid fa-trophy"></i><span>Tournament</span></a>
+        <a href="player.html" class="nav-item"><i class="fa-solid fa-user"></i><span>Player</span></a>
+        <a href="community.html" class="nav-item"><i class="fa-regular fa-comments"></i><span>Community</span></a>
+    </nav>
+
+    <script src="app-api.js"></script>
+    <script>
+        const ROUND_LABELS = ["R32", "R16", "QF", "SF", "F"];
+        const TOURNAMENT_SIZE = 32;
+        const TOURNAMENT_SEASON = "2026-S1";
+
+        let rounds = [];
+        let currentEditingMatch = { rIndex: -1, mIndex: -1 };
+        let selectedWinnerIdx = null;
+        let pendingMatchData = null;
+        let playersById = {};
+
+        const now = new Date();
+        const targetDate = new Date(now.getTime() + (26 * 60 * 60 * 1000) + (53 * 60 * 1000));
+        function updateCountdown() {
+            const current = new Date().getTime();
+            const distance = targetDate - current;
+            if (distance < 0) {
+                document.getElementById("countdownTimer").innerHTML = "ROUND ENDED";
+                return;
+            }
+            const h = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const m = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const s = Math.floor((distance % (1000 * 60)) / 1000);
+            document.getElementById("countdownTimer").innerHTML = `${h}h ${m}m ${s}s`;
+        }
+        setInterval(updateCountdown, 1000);
+        updateCountdown();
+
+        function getAdminToken() {
+            let token = localStorage.getItem("tennis_admin_token") || "";
+            if (!token) {
+                token = prompt("Admin token required to update tournament (default: admin123):") || "";
+                if (token) localStorage.setItem("tennis_admin_token", token);
+            }
+            return token;
+        }
+
+        function buildEmptyBracket() {
+            rounds = [];
+            let matchCount = TOURNAMENT_SIZE / 2;
+            for (let r = 0; r < ROUND_LABELS.length; r++) {
+                const roundMatches = [];
+                for (let m = 0; m < matchCount; m++) {
+                    roundMatches.push({
+                        roundIndex: r,
+                        matchIndex: m,
+                        round: ROUND_LABELS[r],
+                        slot: m + 1,
+                        p1: null,
+                        p1Id: null,
+                        p2: null,
+                        p2Id: null,
+                        winner: null,
+                        winnerId: null,
+                        score: "",
+                        date: "",
+                    });
+                }
+                rounds.push(roundMatches);
+                matchCount = Math.max(1, Math.floor(matchCount / 2));
+            }
+        }
+
+        async function initBracket() {
+            buildEmptyBracket();
+
+            const playersRes = await TennisApi.request("/api/players");
+            const tournamentRes = await TennisApi.request(`/api/tournament?season=${TOURNAMENT_SEASON}`);
+            const players = (playersRes.players || []).slice(0, TOURNAMENT_SIZE);
+            playersById = {};
+            players.forEach((p) => {
+                playersById[p.id] = p;
+            });
+
+            for (let i = 0; i < rounds[0].length; i++) {
+                const p1 = players[i * 2];
+                const p2 = players[i * 2 + 1];
+                rounds[0][i].p1 = p1 ? p1.display_name : "---";
+                rounds[0][i].p1Id = p1 ? p1.id : null;
+                rounds[0][i].p2 = p2 ? p2.display_name : "---";
+                rounds[0][i].p2Id = p2 ? p2.id : null;
+            }
+
+            (tournamentRes.matches || []).forEach((saved) => {
+                const roundIndex = ROUND_LABELS.indexOf(saved.round);
+                if (roundIndex < 0) return;
+                const slotIndex = Number(saved.slot) - 1;
+                const match = rounds[roundIndex] && rounds[roundIndex][slotIndex];
+                if (!match) return;
+
+                match.p1Id = saved.player1_id || match.p1Id;
+                match.p2Id = saved.player2_id || match.p2Id;
+                match.p1 = saved.player1_name || playersById[match.p1Id]?.display_name || match.p1 || "---";
+                match.p2 = saved.player2_name || playersById[match.p2Id]?.display_name || match.p2 || "---";
+                match.winnerId = saved.winner_id || null;
+                match.winner = saved.winner_id === match.p1Id ? 1 : (saved.winner_id === match.p2Id ? 2 : null);
+                match.score = saved.score || "";
+                match.date = saved.date || "";
+            });
+
+            propagateWinners();
+            renderBracket();
+        }
+
+        function propagateWinners() {
+            for (let r = 0; r < rounds.length - 1; r++) {
+                rounds[r + 1].forEach((nextMatch) => {
+                    nextMatch.p1 = "---";
+                    nextMatch.p2 = "---";
+                    nextMatch.p1Id = null;
+                    nextMatch.p2Id = null;
+                });
+
+                rounds[r].forEach((match, idx) => {
+                    if (!match.winnerId) return;
+                    const nextIndex = Math.floor(idx / 2);
+                    const isTopSlot = idx % 2 === 0;
+                    const next = rounds[r + 1][nextIndex];
+                    const winnerName = playersById[match.winnerId]?.display_name || (match.winner === 1 ? match.p1 : match.p2);
+                    if (isTopSlot) {
+                        next.p1 = winnerName || "---";
+                        next.p1Id = match.winnerId;
+                    } else {
+                        next.p2 = winnerName || "---";
+                        next.p2Id = match.winnerId;
+                    }
+                });
+            }
+        }
+
+        function roundDisplayName(label) {
+            if (label === "F") return "Final";
+            return label;
+        }
+
+        function renderBracket() {
+            const container = document.getElementById("bracketContainer");
+            container.innerHTML = "";
+
+            rounds.forEach((round, rIndex) => {
+                const roundDiv = document.createElement("div");
+                roundDiv.className = "round";
+
+                const title = document.createElement("div");
+                title.className = "round-title";
+                title.innerText = roundDisplayName(ROUND_LABELS[rIndex]);
+                roundDiv.appendChild(title);
+
+                round.forEach((match, mIndex) => {
+                    const hasResult = Boolean(match.winnerId);
+                    const matchCard = document.createElement("div");
+                    matchCard.className = hasResult ? "match has-result" : "match";
+                    matchCard.onclick = () => openFormModal(rIndex, mIndex);
+
+                    const p1Class = match.winner === 1 ? "player-row winner" : "player-row";
+                    const p2Class = match.winner === 2 ? "player-row winner" : "player-row";
+
+                    matchCard.innerHTML = `
+                        <div class="${p1Class}">
+                            <span>${TennisApi.escapeHtml(match.p1 || "---")}</span>
+                            ${match.winner === 1 ? '<i class="fa-solid fa-check" style="font-size:0.7rem"></i>' : ""}
+                        </div>
+                        <div class="${p2Class}">
+                            <span>${TennisApi.escapeHtml(match.p2 || "---")}</span>
+                            ${match.winner === 2 ? '<i class="fa-solid fa-check" style="font-size:0.7rem"></i>' : ""}
+                        </div>
+                        <div class="score-display">${TennisApi.escapeHtml(match.score || "")}</div>
+                    `;
+                    roundDiv.appendChild(matchCard);
+                });
+
+                container.appendChild(roundDiv);
+            });
+        }
+
+        function openFormModal(r, m) {
+            const match = rounds[r][m];
+            if (!match.p1Id || !match.p2Id) {
+                alert("Waiting for players...");
+                return;
+            }
+
+            currentEditingMatch = { rIndex: r, mIndex: m };
+            document.getElementById("btnP1").innerText = match.p1;
+            document.getElementById("btnP2").innerText = match.p2;
+
+            selectedWinnerIdx = match.winner || null;
+            updateWinnerButtons();
+            document.getElementById("matchDate").value = match.date || new Date().toISOString().slice(0, 10);
+            resetScoreInputs(match.score || "");
+            document.getElementById("formModal").style.display = "flex";
+        }
+
+        function selectWinner(idx) {
+            selectedWinnerIdx = idx;
+            updateWinnerButtons();
+        }
+
+        function updateWinnerButtons() {
+            const b1 = document.getElementById("btnP1");
+            const b2 = document.getElementById("btnP2");
+            b1.classList.toggle("selected", selectedWinnerIdx === 1);
+            b2.classList.toggle("selected", selectedWinnerIdx === 2);
+        }
+
+        function resetScoreInputs(existingScore) {
+            const scoreParts = (existingScore || "").split(",").map((s) => s.trim()).filter(Boolean);
+            let html = "";
+            const totalRows = Math.max(scoreParts.length, 2);
+            for (let i = 0; i < totalRows; i++) {
+                const part = scoreParts[i] || "";
+                const pieces = part.split(":");
+                html += `
+                    <div class="score-row">
+                        <span class="score-label">Set ${i + 1}</span>
+                        <input type="number" class="score-box p1-score" placeholder="-" value="${pieces[0] || ""}">
+                        <span class="score-divider">:</span>
+                        <input type="number" class="score-box p2-score" placeholder="-" value="${pieces[1] || ""}">
+                    </div>
+                `;
+            }
+            document.getElementById("scoreContainer").innerHTML = html;
+        }
+
+        function addSetRow() {
+            const count = document.getElementById("scoreContainer").children.length + 1;
+            const div = document.createElement("div");
+            div.className = "score-row";
+            div.innerHTML = `
+                <span class="score-label">Set ${count}</span>
+                <input type="number" class="score-box p1-score" placeholder="-">
+                <span class="score-divider">:</span>
+                <input type="number" class="score-box p2-score" placeholder="-">
+            `;
+            document.getElementById("scoreContainer").appendChild(div);
+        }
+
+        function closeAllModals() {
+            document.getElementById("formModal").style.display = "none";
+            document.getElementById("confirmModal").style.display = "none";
+        }
+
+        function showConfirmation() {
+            if (!selectedWinnerIdx) {
+                alert("Please select a winner");
+                return;
+            }
+
+            const p1Inputs = document.querySelectorAll(".p1-score");
+            const p2Inputs = document.querySelectorAll(".p2-score");
+            const scoreParts = [];
+            for (let i = 0; i < p1Inputs.length; i++) {
+                const s1 = p1Inputs[i].value;
+                const s2 = p2Inputs[i].value;
+                if (s1 !== "" && s2 !== "") {
+                    scoreParts.push(`${s1}:${s2}`);
+                }
+            }
+            if (!scoreParts.length) {
+                alert("Enter at least one set score");
+                return;
+            }
+
+            const match = rounds[currentEditingMatch.rIndex][currentEditingMatch.mIndex];
+            const winnerName = selectedWinnerIdx === 1 ? match.p1 : match.p2;
+            pendingMatchData = {
+                winnerIdx: selectedWinnerIdx,
+                winnerId: selectedWinnerIdx === 1 ? match.p1Id : match.p2Id,
+                score: scoreParts.join(", "),
+                date: document.getElementById("matchDate").value,
+                winnerName,
+            };
+
+            document.getElementById("confirmWinnerName").innerText = winnerName || "TBD";
+            document.getElementById("confirmScore").innerText = pendingMatchData.score;
+            document.getElementById("confirmDate").innerText = pendingMatchData.date;
+            document.getElementById("formModal").style.display = "none";
+            document.getElementById("confirmModal").style.display = "flex";
+        }
+
+        function backToForm() {
+            document.getElementById("confirmModal").style.display = "none";
+            document.getElementById("formModal").style.display = "flex";
+        }
+
+        async function submitFinal() {
+            const token = getAdminToken();
+            if (!token) {
+                alert("Admin token is required to submit tournament updates.");
+                return;
+            }
+            const match = rounds[currentEditingMatch.rIndex][currentEditingMatch.mIndex];
+            match.winner = pendingMatchData.winnerIdx;
+            match.winnerId = pendingMatchData.winnerId;
+            match.score = pendingMatchData.score;
+            match.date = pendingMatchData.date;
+            propagateWinners();
+
+            try {
+                await TennisApi.request("/api/admin/tournament/matches", {
+                    method: "POST",
+                    headers: { "x-admin-token": token },
+                    body: JSON.stringify({
+                        season: TOURNAMENT_SEASON,
+                        round: match.round,
+                        slot: match.slot,
+                        player1_id: match.p1Id,
+                        player2_id: match.p2Id,
+                        winner_id: match.winnerId,
+                        score: match.score,
+                        date: match.date,
+                    }),
+                });
+                renderBracket();
+                closeAllModals();
+            } catch (error) {
+                alert(error.message);
+            }
+        }
+
+        window.onload = () => {
+            initBracket().catch((error) => {
+                alert(error.message);
+            });
+        };
+    </script>
+</body>
+</html>

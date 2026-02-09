@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Settings</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-color: #1a1a1a;
+            --card-bg: #2d2d2d;
+            --text-color: #e0e0e0;
+            --accent: #4caf50;
+            --nav-bg: #000000;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 18px;
+            box-sizing: border-box;
+        }
+
+        .card {
+            width: 100%;
+            max-width: 520px;
+            background: var(--card-bg);
+            border: 1px solid #444;
+            border-radius: 12px;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        h2 { margin-top: 0; color: #fff; }
+        .muted { color: #999; font-size: 0.9rem; margin-bottom: 18px; }
+
+        label { display: block; margin-bottom: 6px; color: #aaa; font-size: 0.9rem; }
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #444;
+            border-radius: 8px;
+            background: #1a1a1a;
+            color: #fff;
+            box-sizing: border-box;
+            margin-bottom: 14px;
+            font-size: 1rem;
+            font-family: inherit;
+        }
+
+        textarea { min-height: 88px; resize: vertical; }
+
+        .actions { display: flex; gap: 10px; }
+        .btn {
+            flex: 1;
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            border: 1px solid #444;
+            background: transparent;
+            color: #aaa;
+        }
+        .btn.primary {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2>Account Settings</h2>
+        <div class="muted">Update your profile and competition details.</div>
+
+        <label>Display Name</label>
+        <input type="text" id="displayNameInput" placeholder="Your name">
+
+        <label>Email</label>
+        <input type="email" id="emailInput" placeholder="you@example.com">
+
+        <label>NTRP</label>
+        <input type="text" id="ntrpInput" placeholder="3.5">
+
+        <label>Group</label>
+        <select id="groupInput">
+            <option value="D1">D1</option>
+            <option value="D2">D2</option>
+            <option value="D3">D3</option>
+            <option value="D4">D4</option>
+            <option value="D5">D5</option>
+        </select>
+
+        <label>Bio</label>
+        <textarea id="bioInput" placeholder="Tell other players about your game..."></textarea>
+
+        <div class="actions">
+            <button class="btn" onclick="window.location.href='profile.html'">Cancel</button>
+            <button class="btn primary" onclick="saveAccount()">Save</button>
+        </div>
+    </div>
+
+    <script src="app-api.js"></script>
+    <script>
+        let currentPlayerId = null;
+
+        async function loadAccount() {
+            const session = TennisApi.getSession();
+            if (!session.player_id) {
+                alert("Please login/register first.");
+                window.location.href = "login.html";
+                return;
+            }
+            currentPlayerId = session.player_id;
+
+            try {
+                const response = await TennisApi.request(`/api/profile?player_id=${encodeURIComponent(currentPlayerId)}`);
+                const player = response.player || {};
+                const account = response.account || {};
+
+                document.getElementById("displayNameInput").value = account.display_name || player.display_name || "";
+                document.getElementById("emailInput").value = account.email || player.email || "";
+                document.getElementById("ntrpInput").value = player.ntrp || "";
+                document.getElementById("groupInput").value = player.group || "D5";
+                document.getElementById("bioInput").value = account.bio || player.bio || "";
+            } catch (error) {
+                alert(error.message);
+            }
+        }
+
+        async function saveAccount() {
+            try {
+                await TennisApi.request(`/api/profile/${encodeURIComponent(currentPlayerId)}`, {
+                    method: "PUT",
+                    body: JSON.stringify({
+                        display_name: document.getElementById("displayNameInput").value.trim(),
+                        email: document.getElementById("emailInput").value.trim(),
+                        ntrp: document.getElementById("ntrpInput").value.trim(),
+                        group: document.getElementById("groupInput").value,
+                        bio: document.getElementById("bioInput").value.trim(),
+                    }),
+                });
+                alert("Account updated.");
+                window.location.href = "profile.html";
+            } catch (error) {
+                alert(error.message);
+            }
+        }
+
+        window.onload = loadAccount;
+    </script>
+</body>
+</html>
